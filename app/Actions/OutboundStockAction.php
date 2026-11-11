@@ -1,0 +1,167 @@
+<?php
+
+namespace App\Actions;
+
+use App\Enums\MutationType;
+use App\Enums\RecipientType;
+use App\Enums\SerialStatus;
+use App\Exceptions\InsufficientStockException;
+use App\Exceptions\InvalidSerialException;
+use App\Models\Product;
+use App\Models\ProductSerial;
+use App\Models\StockMutation;
+use App\Models\StockOutItem;
+use App\Models\StockOutItemSerial;
+use App\Models\StockOutTransaction;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+
+class OutboundStockAction
+{
+    /**
+     * Dispatch goods to Field Technicians or Internal Employees
+     *
+     * @param array $data
+     * @param int $userId
+     * @return StockOutTransaction
+     * @throws InsufficientStockException
+     * @throws InvalidSerialException
+     */
+    public function execute(array $data, int $userId): StockOutTransaction
+    {
+        return DB::transaction(function () use ($data, $userId) {
+            $date = !empty($data['transaction_date']) ? Carbon::parse($data['transaction_date']) : Carbon::now();
+            $code = $this->generateTransactionCode($date);
+
+            $recipientType = is_string($data['recipient_type']) 
+                ? RecipientType::from($data['recipient_type']) 
+                : $data['recipient_type'];
+
+            // 1. Create Transaction Header
+            $transaction = StockOutTransaction::create([
+                'transaction_code' => $code,
+                'recipient_type' => $recipientType,
+                'picked_up_by' => trim($data['picked_up_by']),
+                'recipient_department_or_team' => trim($data['recipient_department_or_team']),
+                'recipient_phone' => $data['recipient_phone'] ?? null,
+                'reference_ticket_no' => $data['reference_ticket_no'] ?? null,
+                'purpose' => trim($data['purpose']),
+                'keterangan_pengeluaran' => $data['keterangan_pengeluaran'] ?? null,
+                'dispatched_by_user_id' => $userId,
+                'transaction_date' => $date,
+                'status' => 'COMPLETED',
+                'total_items' => count($data['items']),
+            ]);
+
+            $mutationType = ($recipientType === RecipientType::TEKNISI)
+                ? MutationType::OUTBOUND_TEKNISI
+                : MutationType::OUTBOUND_KARYAWAN;
+
+            // 2. Process Items with Pessimistic Locking
+            foreach ($data['items'] as $item) {
+                $qty = (float) $item['qty'];
+
+                /** @var Product $product */
+                $product = Product::where('id', $item['product_id'])
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                $previousStock = (float) $product->stock;
+
+                // Enforce strictly sufficient stock invariant
+                if ($previousStock < $qty) {
+                    throw new InsufficientStockException(
+                        $product->name,
+                        $qty,
+                        $previousStock
+                    );
+                }
+
+                $newStock = $previousStock - $qty;
+
+                // Serial Number Validation & Allocation
+                $serialIds = $item['serial_ids'] ?? [];
+                if ($product->has_serial_number) {
+                    if (count($serialIds) > 0) {
+                        $serials = ProductSerial::whereIn('id', $serialIds)
+                            ->where('product_id', $product->id)
+                            ->lockForUpdate()
+                            ->get();
+
+                        if ($serials->count() !== count($serialIds)) {
+                            throw new InvalidSerialException("Satu atau lebih Serial Number yang dipilih tidak valid untuk produk '{$product->name}'.");
+                        }
+
+                        foreach ($serials as $serial) {
+                            if ($serial->status !== SerialStatus::AVAILABLE) {
+                                throw new InvalidSerialException("Serial Number '{$serial->serial_number}' tidak berstatus AVAILABLE (Status saat ini: {$serial->status->value}).");
+                            }
+                        }
+                    }
+                }
+
+                // Deduct active stock
+                $product->stock = $newStock;
+                $product->save();
+
+                // Create Stock Out Item
+                $outItem = StockOutItem::create([
+                    'stock_out_transaction_id' => $transaction->id,
+                    'product_id' => $product->id,
+                    'qty' => $qty,
+                    'notes' => $item['notes'] ?? null,
+                ]);
+
+                // Update Serial Numbers status to ISSUED
+                if (!empty($serialIds)) {
+                    foreach ($serialIds as $serialId) {
+                        ProductSerial::where('id', $serialId)->update([
+                            'status' => SerialStatus::ISSUED,
+                            'last_recipient' => $data['picked_up_by'] . " ({$data['recipient_department_or_team']})",
+                            'last_ticket_no' => $data['reference_ticket_no'] ?? null,
+                        ]);
+
+                        StockOutItemSerial::create([
+                            'stock_out_item_id' => $outItem->id,
+                            'product_serial_id' => $serialId,
+                        ]);
+                    }
+                }
+
+                // Create Immutable Stock Mutation Ledger Record
+                StockMutation::create([
+                    'product_id' => $product->id,
+                    'mutation_type' => $mutationType,
+                    'qty' => -$qty,
+                    'previous_stock' => $previousStock,
+                    'current_stock' => $newStock,
+                    'previous_damaged_stock' => (float) $product->damaged_stock,
+                    'current_damaged_stock' => (float) $product->damaged_stock,
+                    'system_operator_id' => $userId,
+                    'person_in_charge' => $data['picked_up_by'] . " ({$data['recipient_department_or_team']})",
+                    'reference_table' => 'stock_out_transactions',
+                    'reference_id' => $transaction->id,
+                    'reference_ticket_no' => $data['reference_ticket_no'] ?? null,
+                    'remarks' => "Pengeluaran Barang [{$code}] untuk {$data['picked_up_by']} - Keperluan: {$data['purpose']}" . ($data['reference_ticket_no'] ? " (Ref: {$data['reference_ticket_no']})" : ''),
+                ]);
+            }
+
+            return $transaction->load(['items.product.unit', 'items.serials', 'dispatchedBy']);
+        });
+    }
+
+    protected function generateTransactionCode(Carbon $date): string
+    {
+        $prefix = 'OUT-' . $date->format('Ym') . '-';
+        $last = StockOutTransaction::where('transaction_code', 'like', "{$prefix}%")
+            ->orderBy('id', 'desc')
+            ->first();
+
+        $number = 1;
+        if ($last && preg_match('/-(\d+)$/', $last->transaction_code, $matches)) {
+            $number = intval($matches[1]) + 1;
+        }
+
+        return $prefix . str_pad((string) $number, 4, '0', STR_PAD_LEFT);
+    }
+}
