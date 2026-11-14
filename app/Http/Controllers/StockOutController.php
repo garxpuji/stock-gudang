@@ -29,6 +29,10 @@ class StockOutController extends Controller
             });
         }
 
+        if ($request->filled('technician')) {
+            $query->where('picked_up_by', $request->input('technician'));
+        }
+
         if ($request->filled('recipient_type')) {
             $query->where('recipient_type', $request->input('recipient_type'));
         }
@@ -43,7 +47,13 @@ class StockOutController extends Controller
 
         $transactions = $query->latest('transaction_date')->latest('id')->paginate(10)->withQueryString();
 
-        return view('stock_out.index', compact('transactions'));
+        $technicians = StockOutTransaction::whereNotNull('picked_up_by')
+            ->where('picked_up_by', '!=', '')
+            ->distinct()
+            ->orderBy('picked_up_by')
+            ->pluck('picked_up_by');
+
+        return view('stock_out.index', compact('transactions', 'technicians'));
     }
 
     public function create(): View

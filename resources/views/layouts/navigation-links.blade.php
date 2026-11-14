@@ -65,3 +65,26 @@
         <span>Stok Opname Fisik</span>
     </a>
 </div>
+
+<div class="space-y-1 pt-3">
+    <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">Export Laporan Excel</div>
+
+    <div class="px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-2">
+        <a href="{{ route('export.products') }}" class="flex items-center gap-2 text-slate-700 hover:text-emerald-700 transition-colors group">
+            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            <span class="group-hover:underline">Stok Tersedia</span>
+        </a>
+        <a href="{{ route('export.stock-out') }}" class="flex items-center gap-2 text-slate-700 hover:text-sky-700 transition-colors group">
+            <svg class="w-4 h-4 text-sky-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            <span class="group-hover:underline">Barang Keluar</span>
+        </a>
+        <a href="{{ route('export.returns') }}" class="flex items-center gap-2 text-slate-700 hover:text-teal-700 transition-colors group">
+            <svg class="w-4 h-4 text-teal-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            <span class="group-hover:underline">Barang Kembali</span>
+        </a>
+        <a href="{{ route('export.damaged-goods') }}" class="flex items-center gap-2 text-slate-700 hover:text-orange-700 transition-colors group">
+            <svg class="w-4 h-4 text-orange-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            <span class="group-hover:underline">Barang Rusak</span>
+        </a>
+    </div>
+</div>

@@ -28,35 +28,38 @@
 </head>
 <body class="h-full text-slate-800 antialiased selection:bg-emerald-500 selection:text-white" x-data="{ sidebarOpen: false, searchModal: false }">
 
-    <div class="min-h-full flex flex-col lg:flex-row">
+    <div class="min-h-screen flex flex-col lg:flex-row">
         
         <!-- MOBILE TOPBAR -->
-        <header class="lg:hidden sticky top-0 z-40 flex items-center justify-between bg-white border-b border-slate-200 px-4 py-3 shadow-xs no-print">
-            <div class="flex items-center gap-3">
-                <button type="button" @click="sidebarOpen = true" class="p-2 -ml-2 rounded-lg text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 min-h-[44px] min-w-[44px] flex items-center justify-center" aria-label="Buka Menu">
+        <header class="lg:hidden sticky top-0 z-40 flex items-center justify-between bg-white border-b border-slate-200 px-3.5 py-2.5 shadow-2xs no-print gap-2">
+            <div class="flex items-center gap-2 shrink-0">
+                <button type="button" @click="sidebarOpen = true" class="p-2 -ml-1 rounded-lg text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 min-h-[40px] min-w-[40px] flex items-center justify-center cursor-pointer" aria-label="Buka Menu">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 </button>
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-bold shadow-xs">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-                    </div>
-                    <div>
-                        <span class="text-sm font-bold text-slate-900 block leading-tight">Gayuh Media Informatika</span>
-                        <span class="text-[11px] font-medium text-emerald-600 block leading-tight">Warehouse & Logistics</span>
-                    </div>
+                <div class="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-bold shadow-2xs shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                 </div>
             </div>
 
-            <div class="flex items-center gap-2">
-                <a href="{{ route('stock-out.create') }}" class="p-2 rounded-lg bg-emerald-600 text-white min-h-[44px] min-w-[44px] flex items-center justify-center shadow-xs" title="Keluar Barang Cepat">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            <!-- Search input on mobile (compact & flexible) -->
+            <form action="{{ route('products.index') }}" method="GET" class="flex-1 min-w-0 relative">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari SKU / SN..." class="w-full pl-8 pr-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-emerald-500">
+                <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+            </form>
+
+            <div class="flex items-center gap-1.5 shrink-0">
+                <a href="{{ route('products.create') }}" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-2xs transition-colors shrink-0" title="Tambah SKU">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <span>+ SKU</span>
                 </a>
             </div>
         </header>
 
         <!-- MOBILE SLIDE-OUT DRAWER -->
         <div x-show="sidebarOpen" x-cloak class="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true">
-            <div x-show="sidebarOpen" x-transition:enter="transition-opacity ease-linear duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-linear duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs" @click="sidebarOpen = false"></div>
+            <div x-show="sidebarOpen" x-transition:enter="transition-opacity ease-linear duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-linear duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs" @click="sidebarOpen = false"></div>
 
             <div x-show="sidebarOpen" x-transition:enter="transition ease-in-out duration-300 transform" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in-out duration-300 transform" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full" class="relative flex-1 flex flex-col max-w-xs w-full bg-white border-r border-slate-200 shadow-xl h-full">
                 <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200">
@@ -69,7 +72,7 @@
                             <span class="text-[11px] font-medium text-emerald-600 block">Warehouse System</span>
                         </div>
                     </div>
-                    <button type="button" @click="sidebarOpen = false" class="p-2 -mr-2 text-slate-400 hover:text-slate-600 rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center">
+                    <button type="button" @click="sidebarOpen = false" class="p-2 -mr-2 text-slate-400 hover:text-slate-600 rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
@@ -85,7 +88,7 @@
         </div>
 
         <!-- DESKTOP SIDEBAR -->
-        <aside class="hidden lg:flex lg:flex-col lg:w-64 xl:w-72 bg-white border-r border-slate-200 shrink-0 sticky top-0 h-screen no-print">
+        <aside class="hidden lg:flex lg:flex-col w-64 shrink-0 bg-white border-r border-slate-200 sticky top-0 h-screen overflow-y-auto no-print">
             <!-- Brand Header -->
             <div class="px-6 py-5 border-b border-slate-200 flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-bold shadow-sm ring-4 ring-emerald-50">
@@ -112,7 +115,7 @@
         </aside>
 
         <!-- MAIN WORKSPACE -->
-        <div class="flex-1 flex flex-col min-w-0">
+        <div class="flex-1 flex flex-col min-w-0 overflow-x-hidden">
             
             <!-- DESKTOP TOPBAR -->
             <header class="hidden lg:flex items-center justify-between bg-white border-b border-slate-200 px-8 py-3.5 sticky top-0 z-20 shadow-2xs no-print">
@@ -124,18 +127,20 @@
                     </div>
                 </form>
 
-                <div class="flex items-center gap-3">
-                    <!-- Quick Action: Dispatch -->
-                    <a href="{{ route('stock-out.create') }}" class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 active:bg-emerald-800 transition-colors shadow-xs">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                        <span>Keluar Barang (Teknisi)</span>
+                <div class="flex items-center gap-2.5">
+                    <!-- Quick Action: Tambah SKU -->
+                    <a href="{{ route('products.create') }}" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900 border border-slate-200 transition-colors">
+                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        <span>Tambah SKU</span>
                     </a>
 
-                    <!-- Quick Action: Return -->
-                    <a href="{{ route('returns.create') }}" class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 transition-colors">
-                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"></path></svg>
-                        <span>Retur & QC</span>
+                    @unless(request()->routeIs('dashboard'))
+                    <!-- Quick Action: Dispatch (Di luar dashboard) -->
+                    <a href="{{ route('stock-out.create') }}" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 active:bg-emerald-800 transition-colors shadow-2xs">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                        <span>Keluar Barang</span>
                     </a>
+                    @endunless
                 </div>
             </header>
 
@@ -176,16 +181,16 @@
             </div>
 
             <!-- PAGE CONTENT -->
-            <main class="flex-1 px-4 lg:px-8 py-6">
+            <main class="flex-1 px-4 sm:px-6 lg:px-8 py-6">
                 @yield('content')
             </main>
 
             <!-- FOOTER -->
-            <footer class="border-t border-slate-200 bg-white py-4 px-4 lg:px-8 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2 no-print">
+            <footer class="border-t border-slate-200 bg-white py-4 px-4 sm:px-6 lg:px-8 text-xs text-slate-500 flex flex-col md:flex-row items-center justify-between gap-2.5 text-center md:text-left no-print">
                 <div>
                     &copy; {{ date('Y') }} <strong class="text-slate-700">PT Gayuh Media Informatika</strong> &bull; Sistem Informasi Inventaris & Logistik Gudang ISP
                 </div>
-                <div class="flex items-center gap-4 text-slate-400">
+                <div class="flex items-center gap-3 sm:gap-4 text-slate-400">
                     <span>MariaDB Server</span>
                     <span>&bull;</span>
                     <span>Debian 13 Env</span>

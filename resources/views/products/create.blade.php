@@ -84,13 +84,13 @@
             </div>
 
             <!-- Flagging Serial Number -->
-            <div class="flex items-center gap-3 pt-6">
+            <label for="has_serial_number" class="flex items-center gap-3 pt-6 cursor-pointer select-none group">
                 <input type="hidden" name="has_serial_number" value="0">
-                <input type="checkbox" name="has_serial_number" id="has_serial_number" value="1" {{ old('has_serial_number') ? 'checked' : '' }} class="w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300">
-                <label for="has_serial_number" class="text-sm font-semibold text-slate-800">
+                <input type="checkbox" name="has_serial_number" id="has_serial_number" value="1" {{ old('has_serial_number') ? 'checked' : '' }} class="w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 cursor-pointer">
+                <span class="text-sm font-semibold text-slate-800 group-hover:text-emerald-700 transition-colors cursor-pointer">
                     Wajib Catat Serial Number & MAC Address per unit (Perangkat Aktif)
-                </label>
-            </div>
+                </span>
+            </label>
 
             <!-- Spesifikasi Teknis -->
             <div class="md:col-span-2">

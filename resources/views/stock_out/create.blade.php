@@ -192,10 +192,10 @@
                             <!-- Available serials list -->
                             <div class="max-h-40 overflow-y-auto bg-white p-3 rounded-xl border border-slate-200 space-y-1.5">
                                 <template x-for="sn in getAvailableSerials(item.product_id)" :key="sn.id">
-                                    <label class="flex items-center gap-2 p-1.5 hover:bg-slate-50 rounded-lg cursor-pointer text-xs">
-                                        <input type="checkbox" :name="'items[' + index + '][serial_ids][]'" :value="sn.id" class="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500">
-                                        <span class="font-mono font-bold text-slate-900" x-text="sn.serial_number"></span>
-                                        <span class="text-slate-400 font-mono" x-show="sn.mac_address" x-text="'(' + sn.mac_address + ')'"></span>
+                                    <label class="flex items-center gap-2 p-1.5 hover:bg-slate-50 rounded-lg cursor-pointer select-none text-xs">
+                                        <input type="checkbox" :name="'items[' + index + '][serial_ids][]'" :value="sn.id" class="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500 cursor-pointer">
+                                        <span class="font-mono font-bold text-slate-900 cursor-pointer" x-text="sn.serial_number"></span>
+                                        <span class="text-slate-400 font-mono cursor-pointer" x-show="sn.mac_address" x-text="'(' + sn.mac_address + ')'"></span>
                                     </label>
                                 </template>
                                 <div x-show="getAvailableSerials(item.product_id).length === 0" class="text-xs text-amber-700 italic py-2">

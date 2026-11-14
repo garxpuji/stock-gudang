@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DamagedGoodController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\StockInController;
@@ -47,4 +48,12 @@ Route::middleware(['web'])->group(function () {
     Route::get('opname', [StockOpnameController::class, 'index'])->name('opname.index');
     Route::get('opname/create', [StockOpnameController::class, 'create'])->name('opname.create');
     Route::post('opname', [StockOpnameController::class, 'store'])->name('opname.store');
+
+    // Export Laporan Excel (.xlsx) & PDF (.pdf)
+    Route::prefix('export')->name('export.')->group(function () {
+        Route::get('/products', [ExportController::class, 'exportProducts'])->name('products');
+        Route::get('/stock-out', [ExportController::class, 'exportStockOut'])->name('stock-out');
+        Route::get('/returns', [ExportController::class, 'exportReturns'])->name('returns');
+        Route::get('/damaged-goods', [ExportController::class, 'exportDamagedGoods'])->name('damaged-goods');
+    });
 });

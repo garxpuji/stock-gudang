@@ -69,6 +69,7 @@ class DashboardController extends Controller
             ->get()
             ->map(function ($cat) {
                 return [
+                    'id' => $cat->id,
                     'name' => $cat->name,
                     'code' => $cat->code,
                     'products_count' => $cat->products_count,

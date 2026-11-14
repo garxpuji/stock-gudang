@@ -77,13 +77,13 @@
             </div>
 
             <!-- Opsi Potong Stok Aktif -->
-            <div class="md:col-span-2 p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-3">
+            <label for="deduct_from_active_stock" class="md:col-span-2 p-4 rounded-xl bg-slate-50 hover:bg-slate-100/80 border border-slate-200 flex items-center gap-3 cursor-pointer select-none transition-colors group">
                 <input type="hidden" name="deduct_from_active_stock" value="0">
-                <input type="checkbox" name="deduct_from_active_stock" id="deduct_from_active_stock" value="1" class="w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300">
-                <label for="deduct_from_active_stock" class="text-xs font-semibold text-slate-800">
+                <input type="checkbox" name="deduct_from_active_stock" id="deduct_from_active_stock" value="1" class="w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 cursor-pointer">
+                <span class="text-xs font-semibold text-slate-800 group-hover:text-emerald-700 transition-colors cursor-pointer">
                     Potong langsung dari Saldo Stok Aktif Gudang (Pilih jika barang rusak saat disimpan di gudang atau saat pengujian pre-provisioning)
-                </label>
-            </div>
+                </span>
+            </label>
 
             <!-- Deskripsi Kerusakan -->
             <div class="md:col-span-2">

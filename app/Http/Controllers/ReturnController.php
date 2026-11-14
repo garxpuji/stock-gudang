@@ -31,6 +31,16 @@ class ReturnController extends Controller
             });
         }
 
+        if ($request->filled('technician')) {
+            $query->where('returned_by', $request->input('technician'));
+        }
+
+        if ($request->filled('qc_status')) {
+            $query->whereHas('items', function ($iq) use ($request) {
+                $iq->where('qc_status', $request->input('qc_status'));
+            });
+        }
+
         if ($request->filled('date_from')) {
             $query->whereDate('transaction_date', '>=', $request->input('date_from'));
         }
@@ -41,7 +51,15 @@ class ReturnController extends Controller
 
         $returns = $query->latest('transaction_date')->latest('id')->paginate(10)->withQueryString();
 
-        return view('returns.index', compact('returns'));
+        $technicians = ReturnTransaction::whereNotNull('returned_by')
+            ->where('returned_by', '!=', '')
+            ->distinct()
+            ->orderBy('returned_by')
+            ->pluck('returned_by');
+
+        $qcStatuses = QcStatus::cases();
+
+        return view('returns.index', compact('returns', 'technicians', 'qcStatuses'));
     }
 
     public function create(Request $request): View
