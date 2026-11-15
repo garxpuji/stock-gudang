@@ -126,15 +126,14 @@ Buka browser dan akses:
 
 ---
 
-## 4. Kredensial Akun Default
+## 4. Kredensial Akun Pengguna
 
-Aplikasi dilengkapi dengan 3 akun pengguna bawaan hasil seeding:
+Akun pengguna awal dikonfigurasi melalui database seeder internal (`database/seeders/UserSeeder.php`). 
 
-| Email | Password | Role / Hak Akses | Nama Lengkap |
-| :--- | :--- | :--- | :--- |
-| `admin@gayuhmedia.id` | `password` | **Admin Gudang** | Budi Santoso |
-| `tegar@gayuhmedia.id` | `password` | **Superadmin** | Tegar Pratama (Principal NOC) |
-| `gudang@gayuhmedia.id` | `password` | **Admin Gudang** | Aris Munandar |
+Silakan merujuk pada dokumentasi internal tim NOC / Administrator sistem Anda untuk informasi akun login, atau kelola akun pengguna secara mandiri melalui CLI tinker:
+```bash
+php artisan tinker
+```
 
 ---
 

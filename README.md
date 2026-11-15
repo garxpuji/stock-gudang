@@ -82,13 +82,9 @@ Akses aplikasi di: **`http://127.0.0.1:8001`**
 
 ---
 
-## 🔑 Kredensial Akun Default
+## 🔑 Autentikasi & Akun Pengguna
 
-| Email | Password | Role | Nama Lengkap |
-| :--- | :--- | :--- | :--- |
-| `admin@gayuhmedia.id` | `password` | **Admin Gudang** | Budi Santoso |
-| `tegar@gayuhmedia.id` | `password` | **Superadmin** | Tegar Pratama (Principal NOC) |
-| `gudang@gayuhmedia.id` | `password` | **Admin Gudang** | Aris Munandar |
+Akun pengguna awal dikonfigurasi melalui seeder internal (`database/seeders/UserSeeder.php`). Hubungi Administrator Sistem / Lead NOC untuk informasi akun login operasional atau kelola akun langsung melalui menu **Kelola User** oleh Superadmin.
 
 ---
 

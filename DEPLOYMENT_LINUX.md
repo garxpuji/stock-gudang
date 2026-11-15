@@ -83,11 +83,11 @@ Masuk ke prompt MariaDB:
 sudo mariadb -u root -p
 ```
 
-Eksekusi perintah SQL berikut (ganti `GudangGMI_Pass2026!` dengan password aman pilihan Anda):
+Eksekusi perintah SQL berikut untuk membuat database dan user aplikasi:
 ```sql
 CREATE DATABASE IF NOT EXISTS stock_gudang CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-CREATE USER IF NOT EXISTS 'gudang_user'@'localhost' IDENTIFIED BY 'GudangGMI_Pass2026!';
+CREATE USER IF NOT EXISTS 'gudang_user'@'localhost' IDENTIFIED BY '<your_secure_password>';
 GRANT ALL PRIVILEGES ON stock_gudang.* TO 'gudang_user'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
@@ -152,7 +152,7 @@ DB_HOST=127.0.0.1
 DB_PORT=3306                        # Sesuaikan port MariaDB Anda (3306 / 3307)
 DB_DATABASE=stock_gudang
 DB_USERNAME=gudang_user
-DB_PASSWORD=GudangGMI_Pass2026!
+DB_PASSWORD=<your_secure_password>
 ```
 
 ### 3. Install Dependensi PHP (Optimasi Produksi)
@@ -351,14 +351,13 @@ sudo systemctl restart stock-gudang-worker
 
 ---
 
-## 13. Akun Login Default Sistem
+## 13. Akun Pengguna Awal
 
-Setelah server berhasil dideploy, akses web via browser dan login dengan salah satu akun berikut:
+Akun pengguna awal dikonfigurasi melalui seeder database internal aplikasi (`database/seeders/UserSeeder.php`). 
 
-| Email | Password | Role | Nama Lengkap |
-| :--- | :--- | :--- | :--- |
-| `admin@gayuhmedia.id` | `password` | **Admin Gudang** | Budi Santoso |
-| `tegar@gayuhmedia.id` | `password` | **Superadmin** | Tegar Pratama (Principal NOC) |
-| `gudang@gayuhmedia.id` | `password` | **Admin Gudang** | Aris Munandar |
+Silakan hubungi Administrator Sistem / Lead NOC internal Anda untuk memperoleh akses akun, atau Anda dapat mereset dan mengelola kredensial akun pengguna secara langsung melalui Artisan CLI tinker di server:
 
-*(Segera perbarui password melalui menu **Kelola User** setelah instalasi selesai).*
+```bash
+cd /var/www/stock-gudang
+sudo php artisan tinker
+```
