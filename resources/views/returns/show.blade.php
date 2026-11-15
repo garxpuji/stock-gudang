@@ -100,7 +100,7 @@
                                 <span class="font-mono text-xs text-slate-500">{{ $item->product->sku }}</span>
                             </td>
                             <td class="py-3.5 px-4 text-center font-bold text-slate-900">
-                                {{ number_format($item->qty, 0) }} {{ $item->product->unit->abbreviation }}
+                                {{ number_format($item->qty, 0) }} {{ $item->product?->unit?->abbreviation ?? '' }}
                             </td>
                             <td class="py-3.5 px-4 text-center">
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border {{ $item->qc_status->badge() }}">

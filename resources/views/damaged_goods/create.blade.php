@@ -26,7 +26,7 @@
                 <select name="product_id" id="product_id" required class="w-full py-2.5 px-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 min-h-[44px]">
                     <option value="">-- Pilih Perangkat --</option>
                     @foreach($products as $p)
-                        <option value="{{ $p->id }}">{{ $p->name }} [Stok: {{ $p->formatted_stock }} &bull; {{ $p->category->name }}]</option>
+                        <option value="{{ $p->id }}">{{ $p->name }} [Stok: {{ $p->formatted_stock }} &bull; {{ $p->category?->name ?? 'Gudang' }}]</option>
                     @endforeach
                 </select>
             </div>

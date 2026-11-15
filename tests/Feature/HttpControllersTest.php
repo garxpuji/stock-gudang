@@ -22,7 +22,16 @@ class HttpControllersTest extends TestCase
     {
         parent::setUp();
         $this->artisan('migrate:fresh', ['--database' => 'mariadb']);
-        $this->seed();
+        $this->seed([
+            \Database\Seeders\UserSeeder::class,
+            \Database\Seeders\CategorySeeder::class,
+            \Database\Seeders\UnitSeeder::class,
+            \Database\Seeders\LocationSeeder::class,
+            \Database\Seeders\SupplierSeeder::class,
+            \Database\Seeders\ProductSeeder::class,
+            \Database\Seeders\ProductSerialSeeder::class,
+            \Database\Seeders\InitialTransactionsSeeder::class,
+        ]);
         $this->admin = User::where('email', 'admin@gayuhmedia.id')->firstOrFail();
     }
 

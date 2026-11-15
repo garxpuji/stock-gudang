@@ -141,7 +141,7 @@
                                     <option value="">-- Pilih Barang yang Dikembalikan --</option>
                                     @foreach($products as $p)
                                         <option value="{{ $p->id }}" data-has-sn="{{ $p->has_serial_number ? '1' : '0' }}">
-                                            {{ $p->name }} [{{ $p->sku }} &bull; {{ $p->category->name }}]
+                                            {{ $p->name }} [{{ $p->sku }} &bull; {{ $p->category?->name ?? 'Gudang' }}]
                                         </option>
                                     @endforeach
                                 </select>

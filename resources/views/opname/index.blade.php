@@ -36,7 +36,7 @@
                         <tr class="hover:bg-slate-50 transition-colors">
                             <td class="py-4 px-6">
                                 <span class="font-bold text-slate-900 block">{{ $prod->name }}</span>
-                                <span class="font-mono text-xs text-slate-400">{{ $prod->sku }} &bull; {{ $prod->category->name }}</span>
+                                <span class="font-mono text-xs text-slate-400">{{ $prod->sku }} &bull; {{ $prod->category?->name ?? 'Gudang' }}</span>
                             </td>
                             <td class="py-4 px-4 text-xs font-semibold text-slate-800">
                                 {{ $prod->location?->name ?? 'Gudang Utama' }}

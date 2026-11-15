@@ -11,7 +11,7 @@
             <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
                 <a href="{{ route('products.index') }}" class="hover:text-emerald-600">Katalog Barang</a>
                 <span>/</span>
-                <span>{{ $product->category->name }}</span>
+                <span>{{ $product->category?->name ?? 'Kategori' }}</span>
             </div>
             <div class="flex items-center gap-3">
                 <h1 class="text-2xl font-bold text-slate-900 tracking-tight">{{ $product->name }}</h1>
@@ -153,12 +153,12 @@
 
                     <div>
                         <span class="text-xs text-slate-400 block">Kategori ISP:</span>
-                        <span class="font-semibold text-slate-800">{{ $product->category->name }}</span>
+                        <span class="font-semibold text-slate-800">{{ $product->category?->name ?? '-' }}</span>
                     </div>
 
                     <div>
                         <span class="text-xs text-slate-400 block">Satuan Ukur:</span>
-                        <span class="font-semibold text-slate-800">{{ $product->unit->name }} ({{ $product->unit->abbreviation }})</span>
+                        <span class="font-semibold text-slate-800">{{ $product->unit?->name ?? '-' }} ({{ $product->unit?->abbreviation ?? '-' }})</span>
                     </div>
 
                     <div>

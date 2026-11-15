@@ -216,7 +216,7 @@
                         <div style="font-size: 8.5pt; color: #64748b;" class="font-mono">{{ $item->product->sku }}</div>
                     </td>
                     <td class="text-center font-mono" style="font-weight: bold;">
-                        {{ number_format($item->qty, 0) }} {{ $item->product->unit->abbreviation }}
+                        {{ number_format($item->qty, 0) }} {{ $item->product?->unit?->abbreviation ?? '' }}
                     </td>
                     <td class="text-center">
                         @if($item->qc_status === \App\Enums\QcStatus::GOOD)

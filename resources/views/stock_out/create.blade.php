@@ -164,7 +164,7 @@
                                 <select :name="'items[' + index + '][product_id]'" x-model="item.product_id" @change="onProductChange(index)" required class="w-full py-2.5 px-3 text-sm bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 min-h-[44px]">
                                     <option value="">-- Pilih Barang dari Gudang --</option>
                                     @foreach($products as $p)
-                                        <option value="{{ $p->id }}" data-stock="{{ (float)$p->stock }}" data-unit="{{ $p->unit->abbreviation }}" data-has-sn="{{ $p->has_serial_number ? '1' : '0' }}">
+                                        <option value="{{ $p->id }}" data-stock="{{ (float)$p->stock }}" data-unit="{{ $p->unit?->abbreviation ?? 'Unit' }}" data-has-sn="{{ $p->has_serial_number ? '1' : '0' }}">
                                             {{ $p->name }} [Stok: {{ $p->formatted_stock }} &bull; {{ $p->location?->code ?? 'Gudang' }}]
                                         </option>
                                     @endforeach

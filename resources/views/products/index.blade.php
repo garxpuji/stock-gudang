@@ -123,7 +123,7 @@
 
                             <!-- Kategori & Lokasi -->
                             <td class="py-4 px-4 text-xs">
-                                <span class="font-semibold text-slate-800 block">{{ $prod->category->name }}</span>
+                                <span class="font-semibold text-slate-800 block">{{ $prod->category?->name ?? '-' }}</span>
                                 <span class="text-slate-500 block mt-0.5">{{ $prod->location?->name ?? 'Gudang Utama' }}</span>
                             </td>
 
@@ -208,7 +208,7 @@
                     </div>
 
                     <div class="flex items-center justify-between pt-1">
-                        <span class="text-xs text-slate-500">{{ $prod->category->name }}</span>
+                        <span class="text-xs text-slate-500">{{ $prod->category?->name ?? '-' }}</span>
                         <a href="{{ route('products.show', $prod) }}" class="text-xs font-semibold text-emerald-600 hover:underline">
                             Detail & Serial &rarr;
                         </a>

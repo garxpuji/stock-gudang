@@ -205,12 +205,12 @@
                 <tr>
                     <td class="text-center">{{ $idx + 1 }}</td>
                     <td>
-                        <strong>{{ $item->product->name }}</strong>
-                        <div style="font-size: 8.5pt; color: #64748b;">{{ $item->product->category->name }}</div>
+                        <strong>{{ $item->product?->name ?? 'Barang' }}</strong>
+                        <div style="font-size: 8.5pt; color: #64748b;">{{ $item->product?->category?->name ?? '-' }}</div>
                     </td>
-                    <td class="font-mono" style="font-size: 9pt;">{{ $item->product->sku }}</td>
+                    <td class="font-mono" style="font-size: 9pt;">{{ $item->product?->sku ?? '-' }}</td>
                     <td class="text-center font-mono" style="font-weight: bold;">
-                        {{ number_format($item->qty, 0) }} {{ $item->product->unit->abbreviation }}
+                        {{ number_format($item->qty, 0) }} {{ $item->product?->unit?->abbreviation ?? '' }}
                     </td>
                     <td>
                         @if($item->serials->count() > 0)

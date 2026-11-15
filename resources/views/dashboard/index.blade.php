@@ -8,7 +8,7 @@
     <!-- PAGE TITLE & CTA OPERASIONAL UTAMA -->
     <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 pb-3 border-b border-slate-200">
         <div>
-            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Dashboard Logistik</h1>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Dashboard Logistik &amp; Inventaris</h1>
             <p class="text-sm text-slate-500 mt-0.5">Pusat kendali perangkat jaringan, kabel drop core, dan alur operasional teknisi.</p>
         </div>
 
@@ -410,7 +410,7 @@
                             </span>
                             <div class="text-right shrink-0">
                                 <span class="font-bold text-sm {{ $mut->qty < 0 ? 'text-rose-600' : 'text-emerald-600' }}">
-                                    {{ $mut->qty > 0 ? '+'.number_format($mut->qty, 0) : number_format($mut->qty, 0) }} {{ $mut->product->unit?->abbreviation }}
+                                    {{ $mut->qty > 0 ? '+'.number_format($mut->qty, 0) : number_format($mut->qty, 0) }} {{ $mut->product?->unit?->abbreviation ?? '' }}
                                 </span>
                                 <span class="block text-[10px] text-slate-400">Saldo: {{ number_format($mut->current_stock, 0) }}</span>
                             </div>

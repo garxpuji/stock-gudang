@@ -107,4 +107,18 @@ class ProductController extends Controller
         return redirect()->route('products.show', $product)
             ->with('success', "Data '{$product->name}' berhasil diperbarui.");
     }
+
+    public function destroy(Product $product): RedirectResponse
+    {
+        // Guard: jika produk memiliki riwayat mutasi / transaksi, cegah penghapusan
+        if ($product->mutations()->exists() || $product->serials()->exists() || $product->stockInItems()->exists() || $product->stockOutItems()->exists()) {
+            return back()->with('error', "Perangkat/Material '{$product->name}' tidak dapat dihapus karena sudah memiliki riwayat mutasi stok atau serial number.");
+        }
+
+        $name = $product->name;
+        $product->delete();
+
+        return redirect()->route('products.index')
+            ->with('success', "Perangkat/Material '{$name}' berhasil dihapus dari katalog.");
+    }
 }

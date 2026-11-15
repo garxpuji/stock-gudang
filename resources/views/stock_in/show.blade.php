@@ -91,7 +91,7 @@
                                 <span class="font-mono text-xs text-slate-500">{{ $item->product->sku }}</span>
                             </td>
                             <td class="py-3.5 px-4 text-center font-bold text-slate-900">
-                                {{ number_format($item->qty, 0) }} {{ $item->product->unit->abbreviation }}
+                                {{ number_format($item->qty, 0) }} {{ $item->product?->unit?->abbreviation ?? '' }}
                             </td>
                             <td class="py-3.5 px-4 text-right font-mono text-xs">
                                 Rp {{ number_format($item->cost_price, 0, ',', '.') }}

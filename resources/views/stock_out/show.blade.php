@@ -99,12 +99,12 @@
                         <tr class="hover:bg-slate-50/50">
                             <td class="py-3.5 px-4 text-center font-bold text-slate-400">{{ $idx + 1 }}</td>
                             <td class="py-3.5 px-4">
-                                <span class="font-bold text-slate-900 block">{{ $item->product->name }}</span>
-                                <span class="text-xs text-slate-500">{{ $item->product->category->name }}</span>
+                                <span class="font-bold text-slate-900 block">{{ $item->product?->name ?? 'Produk Dihapus' }}</span>
+                                <span class="text-xs text-slate-500">{{ $item->product?->category?->name ?? '-' }}</span>
                             </td>
-                            <td class="py-3.5 px-4 font-mono text-xs text-slate-700 font-semibold">{{ $item->product->sku }}</td>
+                            <td class="py-3.5 px-4 font-mono text-xs text-slate-700 font-semibold">{{ $item->product?->sku ?? '-' }}</td>
                             <td class="py-3.5 px-4 text-center font-bold text-slate-900">
-                                {{ number_format($item->qty, 0) }} {{ $item->product->unit->abbreviation }}
+                                {{ number_format($item->qty, 0) }} {{ $item->product?->unit?->abbreviation ?? '' }}
                             </td>
                             <td class="py-3.5 px-6">
                                 @if($item->serials->count() > 0)

@@ -153,7 +153,7 @@
 
                 <div x-show="selectedAction === 'SCRAPPED'" class="space-y-3">
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Nilai Taksiran Kerugian Aset (Loss Cost)</label>
-                    <input type="number" step="0.01" name="loss_cost" value="{{ $damagedGood->product->cost_price * $damagedGood->qty }}" placeholder="Rp" class="w-full py-2.5 px-3 text-sm bg-slate-50 border border-slate-200 rounded-xl font-mono">
+                    <input type="number" step="0.01" name="loss_cost" value="{{ ($damagedGood->product?->cost_price ?? 0) * $damagedGood->qty }}" placeholder="Rp" class="w-full py-2.5 px-3 text-sm bg-slate-50 border border-slate-200 rounded-xl font-mono">
                 </div>
 
                 <div>

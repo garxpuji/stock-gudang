@@ -69,10 +69,11 @@ class InboundStockAction
 
                 // Process Serial Numbers / MAC addresses if applicable
                 $serialsString = null;
+                $snList = [];
+
                 if (!empty($item['serials']) && is_array($item['serials'])) {
-                    $snList = [];
                     foreach ($item['serials'] as $snData) {
-                        $sn = is_array($snData) ? trim($snData['serial_number'] ?? '') : trim($snData);
+                        $sn = is_array($snData) ? trim($snData['serial_number'] ?? '') : trim((string) $snData);
                         $mac = is_array($snData) ? trim($snData['mac_address'] ?? '') : null;
 
                         if (!empty($sn)) {
@@ -90,9 +91,31 @@ class InboundStockAction
                             $snList[] = $sn;
                         }
                     }
-                    $serialsString = implode(', ', $snList);
                 } elseif (!empty($item['serial_numbers'])) {
-                    $serialsString = is_array($item['serial_numbers']) ? implode(', ', $item['serial_numbers']) : $item['serial_numbers'];
+                    $rawSerials = is_array($item['serial_numbers'])
+                        ? $item['serial_numbers']
+                        : preg_split('/[\r\n,;]+/', (string) $item['serial_numbers'], -1, PREG_SPLIT_NO_EMPTY);
+
+                    foreach ($rawSerials as $rawSn) {
+                        $sn = trim((string) $rawSn);
+                        if (!empty($sn)) {
+                            ProductSerial::updateOrCreate(
+                                [
+                                    'product_id' => $product->id,
+                                    'serial_number' => $sn,
+                                ],
+                                [
+                                    'status' => SerialStatus::AVAILABLE,
+                                    'notes' => 'Penerimaan masuk via ' . $code,
+                                ]
+                            );
+                            $snList[] = $sn;
+                        }
+                    }
+                }
+
+                if (!empty($snList)) {
+                    $serialsString = implode(', ', $snList);
                 }
 
                 // Create Transaction Item

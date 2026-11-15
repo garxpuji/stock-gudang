@@ -41,7 +41,7 @@
             <select name="product_id" id="product_id" @change="onProductChange($event)" required class="w-full py-3 px-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 min-h-[44px]">
                 <option value="">-- Pilih Barang yang Dihitung Fisiknya --</option>
                 @foreach($products as $p)
-                    <option value="{{ $p->id }}" data-stock="{{ (float)$p->stock }}" data-damaged="{{ (float)$p->damaged_stock }}" data-unit="{{ $p->unit->abbreviation }}" {{ ($selectedProduct && $selectedProduct->id === $p->id) ? 'selected' : '' }}>
+                    <option value="{{ $p->id }}" data-stock="{{ (float)$p->stock }}" data-damaged="{{ (float)$p->damaged_stock }}" data-unit="{{ $p->unit?->abbreviation ?? 'Unit' }}" {{ ($selectedProduct && $selectedProduct->id === $p->id) ? 'selected' : '' }}>
                         {{ $p->name }} [Stok Sistem: {{ $p->formatted_stock }} &bull; {{ $p->location?->code ?? 'Gudang' }}]
                     </option>
                 @endforeach

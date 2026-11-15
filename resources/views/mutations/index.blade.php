@@ -108,7 +108,7 @@
 
                             <td class="py-4 px-4 text-right font-mono font-bold whitespace-nowrap text-sm {{ $mut->qty < 0 ? 'text-rose-600' : 'text-emerald-600' }}">
                                 {{ $mut->qty > 0 ? '+'.number_format($mut->qty, 0) : number_format($mut->qty, 0) }}
-                                <span class="text-xs text-slate-400 font-normal">{{ $mut->product->unit?->abbreviation }}</span>
+                                <span class="text-xs text-slate-400 font-normal">{{ $mut->product?->unit?->abbreviation ?? '' }}</span>
                             </td>
 
                             <td class="py-4 px-4 text-center font-mono text-xs whitespace-nowrap">

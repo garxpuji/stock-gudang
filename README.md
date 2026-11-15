@@ -1,58 +1,108 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sistem Informasi Inventaris & Logistik Gudang ISP
+### PT Gayuh Media Informatika (GMI)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi manajemen pergudangan dan logistik telekomunikasi internet service provider (ISP) berbasis **Laravel 11**, dirancang untuk menangani seluruh siklus operasional inventaris perangkat aktif (ONT, Router, Switch), material optik pasif (Kabel Dropcore, Patchcord, ODP), alat ukur (Splicer, OTDR), pelacakan Serial Number/MAC Address, retur teknisi, serta karantina barang rusak dan klaim garansi RMA.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🌟 Fitur Utama Sistem
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+1. **Dashboard KPI & Analitik Inventaris**:
+   - Total valuasi aset gudang aktif dan nilai kerugian barang karantina.
+   - Peringatan dini stok minimum (*low stock alerts*).
+   - Monitoring cepat unit berstatus *Available*, *Issued*, dan *Quarantined*.
+2. **Katalog Produk & Material Jaringan**:
+   - Pelacakan SKU, Barcode, Kategori ISP, Lokasi Rak, dan Satuan Ukur.
+   - Opsi pelacakan Serial Number & MAC Address per unit perangkat aktif.
+3. **Penerimaan Barang Masuk (Inbound / Pengadaan Vendor)**:
+   - Pencatatan PO, Surat Jalan Vendor, Kurir, dan harga beli satuan.
+   - Input Serial Number secara fleksibel (koma / baris baru) dengan registrasi otomatis ke buku besar `ProductSerial`.
+4. **Pengeluaran Barang ke Teknisi Lapangan (Outbound Dispatch)**:
+   - Pencatatan SPK / Tiket PSB / Maintenance, nama teknisi penerima, dan divisi.
+   - Alokasi unit Serial Number spesifik berstatus `AVAILABLE`.
+   - Cetak langsung **Surat Bukti Pengeluaran Barang (Surat Jalan)** resmi ber-kop perusahaan.
+5. **Retur Barang & Inspeksi Quality Control (QC)**:
+   - Penerimaan barang sisa material atau dismantle dari pelanggan.
+   - Inspeksi QC per unit: status `GOOD` otomatis restock kembali ke gudang, status `DAMAGED` otomatis masuk ke Area Karantina.
+   - Cetak langsung **Berita Acara Pengembalian Barang**.
+6. **Area Karantina & Penanganan Barang Rusak (RMA / Scrapped)**:
+   - Pencatatan kategori kerusakan fisik/teknis (tersambar petir, port jebol, laser drop, mati total).
+   - Unggah bukti foto kerusakan fisik.
+   - Eksekusi tindakan lanjutan: **Klaim Garansi (RMA) Vendor**, **Pemusnahan (Scrapped)** dengan kalkulasi nilai kerugian aset, atau **Perbaikan Internal**.
+7. **Audit Stok Opname Fisik**:
+   - Penyesuaian saldo fisik riil dengan saldo sistem dan pencatatan selisih mutasi opname otomatis.
+8. **Buku Besar Mutasi Stok Terpadu (Immutable Stock Ledger)**:
+   - Riwayat mutasi mendalam per SKU, tipe transaksi, operator penanggung jawab, dan saldo berjalan.
+9. **Kelola Pengguna (User Management)**:
+   - Manajemen staf gudang, Superadmin, penugasan role, dan reset password.
+10. **Kelola Data Master Lengkap**:
+    - Manajemen Satuan Ukur (Pcs, Meter, Roll, Set, dll).
+    - Manajemen Kategori Barang (ONT, Router, Dropcore, Pasif FO, dll).
+    - Manajemen Lokasi Rak Gudang (RAK-A1, Area Drum Kabel, dll).
+    - Manajemen Supplier & Distributor Mitra.
+11. **Ekspor Laporan**:
+    - Ekspor data produk, transaksi pengeluaran, retur, dan karantina ke format Microsoft Excel (.xlsx).
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 🚀 Panduan Instalasi Cepat
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Panduan instalasi lengkap dan mendalam tersedia di:
+👉 **[PANDUAN_INSTALASI.md](PANDUAN_INSTALASI.md)**
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### Ringkasan Perintah:
 
 ```bash
-composer require laravel/boost --dev
+# 1. Clone repositori
+git clone https://github.com/garxpuji/stock-gudang.git
+cd stock-gudang
 
-php artisan boost:install
+# 2. Salin environment & atur database
+copy .env.example .env
+
+# 3. Install dependensi backend & frontend
+composer install
+npm install
+npm run build
+
+# 4. Generate application key
+php artisan key:generate
+
+# 5. Jalankan migrasi dan seeder akun
+php artisan migrate --seed
+
+# 6. Hubungkan symbolic link storage
+php artisan storage:link
+
+# 7. Jalankan server lokal
+php artisan serve --port=8001
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Akses aplikasi di: **`http://127.0.0.1:8001`**
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 🔑 Kredensial Akun Default
 
-## Code of Conduct
+| Email | Password | Role | Nama Lengkap |
+| :--- | :--- | :--- | :--- |
+| `admin@gayuhmedia.id` | `password` | **Admin Gudang** | Budi Santoso |
+| `tegar@gayuhmedia.id` | `password` | **Superadmin** | Tegar Pratama (Principal NOC) |
+| `gudang@gayuhmedia.id` | `password` | **Admin Gudang** | Aris Munandar |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## 🧪 Pengujian Otomatis (Testing)
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Proyek ini dilengkapi dengan 29 test case otomatis (197 assertions) yang memverifikasi integritas seluruh controller, actions, validasi, dan alur end-to-end gudang:
 
-## License
+```bash
+php vendor/bin/phpunit
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Hasil uji: **100% PASSED** (0 Failures, 0 Errors).
+
+---
+
+## 📄 Lisensi
+Hak Cipta &copy; 2026 PT Gayuh Media Informatika. Seluruh hak cipta dilindungi undang-undang.

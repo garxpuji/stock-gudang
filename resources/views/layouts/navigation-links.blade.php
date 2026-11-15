@@ -88,3 +88,28 @@
         </a>
     </div>
 </div>
+
+<div class="space-y-1 pt-3">
+    <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">Master Data & Referensi</div>
+
+    <!-- Master Kategori & Satuan & Rak -->
+    <a href="{{ route('categories.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs('categories.*', 'units.*', 'locations.*', 'suppliers.*') ? 'bg-emerald-50 text-emerald-800 font-semibold border border-emerald-200' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+        <svg class="w-5 h-5 {{ request()->routeIs('categories.*', 'units.*', 'locations.*', 'suppliers.*') ? 'text-emerald-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+        <span class="flex-1">Master Data</span>
+        <span class="text-[10px] bg-slate-100 text-slate-600 font-semibold px-2 py-0.5 rounded-md">Rak & Sup</span>
+    </a>
+</div>
+
+<div class="space-y-1 pt-3">
+    <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">Administrasi Sistem</div>
+
+    <!-- Kelola Pengguna -->
+    <a href="{{ route('users.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs('users.*') ? 'bg-emerald-50 text-emerald-800 font-semibold border border-emerald-200' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+        <svg class="w-5 h-5 {{ request()->routeIs('users.*') ? 'text-emerald-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+        <span class="flex-1">Kelola User</span>
+        @php
+            $totalUserCount = \App\Models\User::count();
+        @endphp
+        <span class="text-[11px] bg-slate-100 text-slate-600 font-semibold px-2 py-0.5 rounded-full">{{ $totalUserCount }}</span>
+    </a>
+</div>

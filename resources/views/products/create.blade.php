@@ -40,29 +40,44 @@
 
             <!-- Kategori -->
             <div>
-                <label for="category_id" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Kategori ISP <span class="text-rose-500">*</span></label>
+                <div class="flex items-center justify-between mb-1.5">
+                    <label for="category_id" class="text-xs font-bold uppercase tracking-wider text-slate-700">Kategori ISP <span class="text-rose-500">*</span></label>
+                    <a href="{{ route('categories.index') }}" target="_blank" class="text-[11px] text-emerald-600 font-semibold hover:underline">+ Tambah Kategori</a>
+                </div>
                 <select name="category_id" id="category_id" required class="w-full py-2.5 px-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
                     <option value="">Pilih Kategori...</option>
                     @foreach($categories as $cat)
                         <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
                     @endforeach
                 </select>
+                @if($categories->isEmpty())
+                    <p class="text-[11px] text-rose-600 mt-1">Belum ada kategori terdaftar. Silakan <a href="{{ route('categories.index') }}" target="_blank" class="font-bold underline">buat kategori di sini</a> terlebih dahulu.</p>
+                @endif
             </div>
 
             <!-- Satuan -->
             <div>
-                <label for="unit_id" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Satuan Ukur <span class="text-rose-500">*</span></label>
+                <div class="flex items-center justify-between mb-1.5">
+                    <label for="unit_id" class="text-xs font-bold uppercase tracking-wider text-slate-700">Satuan Ukur <span class="text-rose-500">*</span></label>
+                    <a href="{{ route('units.create') }}" target="_blank" class="text-[11px] text-emerald-600 font-semibold hover:underline">+ Tambah Satuan</a>
+                </div>
                 <select name="unit_id" id="unit_id" required class="w-full py-2.5 px-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
                     <option value="">Pilih Satuan...</option>
                     @foreach($units as $unit)
                         <option value="{{ $unit->id }}" {{ old('unit_id') == $unit->id ? 'selected' : '' }}>{{ $unit->name }} ({{ $unit->abbreviation }})</option>
                     @endforeach
                 </select>
+                @if($units->isEmpty())
+                    <p class="text-[11px] text-rose-600 mt-1">Belum ada satuan terdaftar. Silakan <a href="{{ route('units.create') }}" target="_blank" class="font-bold underline">buat satuan baru di sini</a> terlebih dahulu.</p>
+                @endif
             </div>
 
             <!-- Lokasi Rak -->
             <div>
-                <label for="location_id" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Lokasi Rak / Bin Gudang</label>
+                <div class="flex items-center justify-between mb-1.5">
+                    <label for="location_id" class="text-xs font-bold uppercase tracking-wider text-slate-700">Lokasi Rak / Bin Gudang</label>
+                    <a href="{{ route('locations.index') }}" target="_blank" class="text-[11px] text-emerald-600 font-semibold hover:underline">+ Tambah Rak</a>
+                </div>
                 <select name="location_id" id="location_id" class="w-full py-2.5 px-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
                     <option value="">Pilih Lokasi Rak...</option>
                     @foreach($locations as $loc)
