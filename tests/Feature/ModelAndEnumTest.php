@@ -7,20 +7,24 @@ use App\Enums\DamagedActionTaken;
 use App\Enums\MutationType;
 use App\Enums\QcStatus;
 use App\Enums\RecipientType;
-use App\Enums\SerialStatus;
 use App\Enums\StockStatus;
 use App\Models\Category;
 use App\Models\DamagedGood;
 use App\Models\Location;
 use App\Models\Product;
-use App\Models\ProductSerial;
 use App\Models\ReturnTransaction;
-use App\Models\StockInTransaction;
 use App\Models\StockMutation;
 use App\Models\StockOutTransaction;
-use App\Models\Supplier;
 use App\Models\Unit;
 use App\Models\User;
+use Database\Seeders\CategorySeeder;
+use Database\Seeders\InitialTransactionsSeeder;
+use Database\Seeders\LocationSeeder;
+use Database\Seeders\ProductSeeder;
+use Database\Seeders\ProductSerialSeeder;
+use Database\Seeders\SupplierSeeder;
+use Database\Seeders\UnitSeeder;
+use Database\Seeders\UserSeeder;
 use Illuminate\Database\QueryException;
 use Tests\TestCase;
 
@@ -31,16 +35,17 @@ class ModelAndEnumTest extends TestCase
         parent::setUp();
         $this->artisan('migrate:fresh', ['--database' => 'mariadb']);
         $this->seed([
-            \Database\Seeders\UserSeeder::class,
-            \Database\Seeders\CategorySeeder::class,
-            \Database\Seeders\UnitSeeder::class,
-            \Database\Seeders\LocationSeeder::class,
-            \Database\Seeders\SupplierSeeder::class,
-            \Database\Seeders\ProductSeeder::class,
-            \Database\Seeders\ProductSerialSeeder::class,
-            \Database\Seeders\InitialTransactionsSeeder::class,
+            UserSeeder::class,
+            CategorySeeder::class,
+            UnitSeeder::class,
+            LocationSeeder::class,
+            SupplierSeeder::class,
+            ProductSeeder::class,
+            ProductSerialSeeder::class,
+            InitialTransactionsSeeder::class,
         ]);
     }
+
     public function test_models_and_enums_are_working_properly(): void
     {
         // Check User

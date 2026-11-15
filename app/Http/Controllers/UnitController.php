@@ -18,7 +18,7 @@ class UnitController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('abbreviation', 'like', "%{$search}%");
+                    ->orWhere('abbreviation', 'like', "%{$search}%");
             });
         }
 
@@ -42,8 +42,11 @@ class UnitController extends Controller
         $unit = Unit::create($validated);
 
         if ($request->filled('redirect_to')) {
-            return redirect($request->input('redirect_to'))
-                ->with('success', "Satuan '{$unit->name} ({$unit->abbreviation})' berhasil ditambahkan.");
+            $redirectTo = (string) $request->input('redirect_to');
+            if ((str_starts_with($redirectTo, '/') && ! str_starts_with($redirectTo, '//')) || str_starts_with($redirectTo, url('/'))) {
+                return redirect($redirectTo)
+                    ->with('success', "Satuan '{$unit->name} ({$unit->abbreviation})' berhasil ditambahkan.");
+            }
         }
 
         return redirect()->route('units.index')

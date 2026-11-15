@@ -18,8 +18,8 @@ class LocationController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('code', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -44,8 +44,11 @@ class LocationController extends Controller
         $location = Location::create($validated);
 
         if ($request->filled('redirect_to')) {
-            return redirect($request->input('redirect_to'))
-                ->with('success', "Lokasi Rak '{$location->name}' berhasil ditambahkan.");
+            $redirectTo = (string) $request->input('redirect_to');
+            if ((str_starts_with($redirectTo, '/') && ! str_starts_with($redirectTo, '//')) || str_starts_with($redirectTo, url('/'))) {
+                return redirect($redirectTo)
+                    ->with('success', "Lokasi Rak '{$location->name}' berhasil ditambahkan.");
+            }
         }
 
         return redirect()->route('locations.index')

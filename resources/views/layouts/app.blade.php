@@ -187,13 +187,6 @@
                 <div>
                     &copy; {{ date('Y') }} <strong class="text-slate-700">PT Gayuh Media Informatika</strong> &bull; Sistem Informasi Inventaris & Logistik Gudang ISP
                 </div>
-                <div class="flex items-center gap-3 sm:gap-4 text-slate-400">
-                    <span>MariaDB Server</span>
-                    <span>&bull;</span>
-                    <span>Debian 13 Env</span>
-                    <span>&bull;</span>
-                    <span class="text-emerald-600 font-semibold">Ready Production</span>
-                </div>
             </footer>
         </div>
     </div>

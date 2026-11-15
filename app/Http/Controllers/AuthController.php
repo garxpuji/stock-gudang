@@ -22,11 +22,15 @@ class AuthController extends Controller
     public function login(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
         ]);
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (Auth::attempt([
+            'email' => $credentials['email'],
+            'password' => $credentials['password'],
+            'is_active' => true,
+        ], $request->boolean('remember'))) {
             $request->session()->regenerate();
 
             return redirect()->intended(route('dashboard'))
@@ -34,18 +38,25 @@ class AuthController extends Controller
         }
 
         return back()->withErrors([
-            'email' => 'Email atau kata sandi tidak cocok dengan data petugas gudang.',
+            'email' => 'Email atau kata sandi tidak cocok, atau akun petugas gudang sedang dinonaktifkan.',
         ])->onlyInput('email');
     }
 
     public function quickLogin(Request $request): RedirectResponse
     {
-        $email = $request->input('email', 'admin@gayuhmedia.id');
-        $user = User::where('email', $email)->first();
+        abort_unless(app()->environment(['local', 'testing']), 403);
+
+        $validated = $request->validate([
+            'email' => ['nullable', 'email'],
+        ]);
+
+        $email = $validated['email'] ?? 'admin@gayuhmedia.id';
+        $user = User::where('email', $email)->where('is_active', true)->first();
 
         if ($user) {
             Auth::login($user);
             $request->session()->regenerate();
+
             return redirect()->route('dashboard')->with('success', "Masuk sebagai {$user->name} ({$user->role})");
         }
 

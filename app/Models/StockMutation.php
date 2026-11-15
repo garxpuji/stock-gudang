@@ -52,40 +52,40 @@ class StockMutation extends Model
 
     public function scopeFilter(Builder $query, array $filters): Builder
     {
-        if (!empty($filters['product_id'])) {
+        if (! empty($filters['product_id'])) {
             $query->where('product_id', $filters['product_id']);
         }
 
-        if (!empty($filters['mutation_type'])) {
+        if (! empty($filters['mutation_type'])) {
             $query->where('mutation_type', $filters['mutation_type']);
         }
 
-        if (!empty($filters['ticket_no'])) {
+        if (! empty($filters['ticket_no'])) {
             $query->where('reference_ticket_no', 'like', "%{$filters['ticket_no']}%");
         }
 
-        if (!empty($filters['person'])) {
+        if (! empty($filters['person'])) {
             $query->where('person_in_charge', 'like', "%{$filters['person']}%");
         }
 
-        if (!empty($filters['search'])) {
+        if (! empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
                 $q->where('person_in_charge', 'like', "%{$search}%")
-                  ->orWhere('reference_ticket_no', 'like', "%{$search}%")
-                  ->orWhere('remarks', 'like', "%{$search}%")
-                  ->orWhereHas('product', function ($pq) use ($search) {
-                      $pq->where('name', 'like', "%{$search}%")
-                         ->orWhere('sku', 'like', "%{$search}%");
-                  });
+                    ->orWhere('reference_ticket_no', 'like', "%{$search}%")
+                    ->orWhere('remarks', 'like', "%{$search}%")
+                    ->orWhereHas('product', function ($pq) use ($search) {
+                        $pq->where('name', 'like', "%{$search}%")
+                            ->orWhere('sku', 'like', "%{$search}%");
+                    });
             });
         }
 
-        if (!empty($filters['date_from'])) {
+        if (! empty($filters['date_from'])) {
             $query->whereDate('created_at', '>=', $filters['date_from']);
         }
 
-        if (!empty($filters['date_to'])) {
+        if (! empty($filters['date_to'])) {
             $query->whereDate('created_at', '<=', $filters['date_to']);
         }
 

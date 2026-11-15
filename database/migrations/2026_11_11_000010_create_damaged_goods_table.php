@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('photo_proof')->nullable(); // Foto kondisi fisik
             $table->string('source')->default('DIRECT_REPORT'); // QC_RETURN, DIRECT_REPORT, WAREHOUSE_HANDLING
             $table->foreignId('return_item_id')->nullable()->constrained('return_transaction_items')->nullOnDelete();
-            
+
             // Follow-up actions
             $table->string('action_taken')->default('PENDING'); // PENDING, RMA_VENDOR, SCRAPPED, REPAIRED_INTERNAL
             $table->dateTime('action_date')->nullable();

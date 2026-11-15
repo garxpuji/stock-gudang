@@ -26,7 +26,7 @@ class InitialTransactionsSeeder extends Seeder
     public function run(): void
     {
         $admin = User::where('email', 'admin@gayuhmedia.id')->first();
-        if (!$admin) {
+        if (! $admin) {
             return;
         }
 

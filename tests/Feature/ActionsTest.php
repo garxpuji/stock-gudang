@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Actions\InboundStockAction;
 use App\Actions\OutboundStockAction;
 use App\Actions\ProcessReturnAction;
-use App\Actions\RecordDamagedGoodsAction;
 use App\Actions\ResolveDamagedGoodsAction;
 use App\Actions\StockOpnameAction;
 use App\Enums\DamageCategory;
@@ -15,11 +14,20 @@ use App\Enums\QcStatus;
 use App\Enums\RecipientType;
 use App\Enums\SerialStatus;
 use App\Exceptions\InsufficientStockException;
+use App\Exceptions\InvalidSerialException;
 use App\Models\DamagedGood;
 use App\Models\Product;
 use App\Models\ProductSerial;
 use App\Models\StockMutation;
 use App\Models\User;
+use Database\Seeders\CategorySeeder;
+use Database\Seeders\InitialTransactionsSeeder;
+use Database\Seeders\LocationSeeder;
+use Database\Seeders\ProductSeeder;
+use Database\Seeders\ProductSerialSeeder;
+use Database\Seeders\SupplierSeeder;
+use Database\Seeders\UnitSeeder;
+use Database\Seeders\UserSeeder;
 use Tests\TestCase;
 
 class ActionsTest extends TestCase
@@ -31,14 +39,14 @@ class ActionsTest extends TestCase
         parent::setUp();
         $this->artisan('migrate:fresh', ['--database' => 'mariadb']);
         $this->seed([
-            \Database\Seeders\UserSeeder::class,
-            \Database\Seeders\CategorySeeder::class,
-            \Database\Seeders\UnitSeeder::class,
-            \Database\Seeders\LocationSeeder::class,
-            \Database\Seeders\SupplierSeeder::class,
-            \Database\Seeders\ProductSeeder::class,
-            \Database\Seeders\ProductSerialSeeder::class,
-            \Database\Seeders\InitialTransactionsSeeder::class,
+            UserSeeder::class,
+            CategorySeeder::class,
+            UnitSeeder::class,
+            LocationSeeder::class,
+            SupplierSeeder::class,
+            ProductSeeder::class,
+            ProductSerialSeeder::class,
+            InitialTransactionsSeeder::class,
         ]);
         $this->admin = User::where('email', 'admin@gayuhmedia.id')->firstOrFail();
     }
@@ -48,7 +56,7 @@ class ActionsTest extends TestCase
         $product = Product::where('sku', 'ONT-ZTE-F609')->firstOrFail();
         $initialStock = (float) $product->stock;
 
-        $action = new InboundStockAction();
+        $action = new InboundStockAction;
         $transaction = $action->execute([
             'supplier_name' => 'PT Fiberhome',
             'po_number' => 'PO-TEST-001',
@@ -92,7 +100,7 @@ class ActionsTest extends TestCase
             ->where('status', SerialStatus::AVAILABLE)
             ->firstOrFail();
 
-        $action = new OutboundStockAction();
+        $action = new OutboundStockAction;
         $transaction = $action->execute([
             'recipient_type' => RecipientType::TEKNISI,
             'picked_up_by' => 'Joko Susilo',
@@ -141,7 +149,7 @@ class ActionsTest extends TestCase
         $initialOntStock = (float) $productOnt->stock;
         $initialOntDamaged = (float) $productOnt->damaged_stock;
 
-        $action = new ProcessReturnAction();
+        $action = new ProcessReturnAction;
         $returnTx = $action->execute([
             'returned_by' => 'Bambang Teknisi',
             'returned_by_contact' => '0812345678',
@@ -197,7 +205,7 @@ class ActionsTest extends TestCase
         $initialDamaged = (float) $damagedProduct->damaged_stock;
         $initialActive = (float) $damagedProduct->stock;
 
-        $action = new ResolveDamagedGoodsAction();
+        $action = new ResolveDamagedGoodsAction;
         // Resolve with REPAIRED_INTERNAL
         $resolved = $action->execute(
             $dmg->id,
@@ -217,7 +225,7 @@ class ActionsTest extends TestCase
     {
         $product = Product::firstOrFail();
 
-        $action = new StockOpnameAction();
+        $action = new StockOpnameAction;
         $updatedProduct = $action->execute([
             'product_id' => $product->id,
             'actual_stock' => 99.00,
@@ -237,5 +245,30 @@ class ActionsTest extends TestCase
         $this->assertNotNull($mutation);
         $this->assertEquals('Lead Auditor', $mutation->person_in_charge);
         $this->assertEquals(99.00, (float) $mutation->current_stock);
+    }
+
+    public function test_outbound_stock_action_rejects_mismatched_serial_count(): void
+    {
+        $product = Product::where('sku', 'ONT-ZTE-F609')->firstOrFail();
+        $serial = ProductSerial::where('product_id', $product->id)
+            ->where('status', SerialStatus::AVAILABLE)
+            ->firstOrFail();
+
+        $action = new OutboundStockAction;
+
+        $this->expectException(InvalidSerialException::class);
+        $action->execute([
+            'recipient_type' => RecipientType::TEKNISI,
+            'picked_up_by' => 'Joko Susilo',
+            'recipient_department_or_team' => 'Tim PSB 2',
+            'purpose' => 'Pasang Baru',
+            'items' => [
+                [
+                    'product_id' => $product->id,
+                    'qty' => 2,
+                    'serial_ids' => [$serial->id],
+                ],
+            ],
+        ], $this->admin->id);
     }
 }

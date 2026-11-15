@@ -42,12 +42,12 @@
 
                 <div>
                     <label for="email" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Email Petugas</label>
-                    <input type="email" name="email" id="email" value="{{ old('email', 'admin@gayuhmedia.id') }}" required autofocus class="w-full py-3 px-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 min-h-[44px]">
+                    <input type="email" name="email" id="email" value="{{ old('email') }}" placeholder="nama@gayuhmedia.id" required autofocus class="w-full py-3 px-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 min-h-[44px]">
                 </div>
 
                 <div>
                     <label for="password" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Kata Sandi</label>
-                    <input type="password" name="password" id="password" value="password" required class="w-full py-3 px-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 min-h-[44px]">
+                    <input type="password" name="password" id="password" placeholder="Masukkan kata sandi" required class="w-full py-3 px-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 min-h-[44px]">
                 </div>
 
                 <div class="flex items-center justify-between text-xs pt-1">
@@ -62,30 +62,32 @@
                 </button>
             </form>
 
-            <!-- DEMO LOGIN QUICK ACCESS -->
-            <div class="pt-4 border-t border-slate-100 space-y-2">
-                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block text-center">Akses Cepat (Demo Akun)</span>
-                
-                <div class="grid grid-cols-2 gap-2">
-                    <form method="POST" action="{{ route('quick-login') }}">
-                        @csrf
-                        <input type="hidden" name="email" value="admin@gayuhmedia.id">
-                        <button type="submit" class="w-full p-2.5 rounded-xl border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/50 text-left transition-colors">
-                            <span class="text-xs font-bold text-slate-800 block">Budi Santoso</span>
-                            <span class="text-[10px] text-emerald-700 font-semibold block">Admin Gudang</span>
-                        </button>
-                    </form>
+            @env(['local', 'testing'])
+                <!-- DEMO LOGIN QUICK ACCESS -->
+                <div class="pt-4 border-t border-slate-100 space-y-2">
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block text-center">Akses Cepat (Demo Akun)</span>
+                    
+                    <div class="grid grid-cols-2 gap-2">
+                        <form method="POST" action="{{ route('quick-login') }}">
+                            @csrf
+                            <input type="hidden" name="email" value="admin@gayuhmedia.id">
+                            <button type="submit" class="w-full p-2.5 rounded-xl border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/50 text-left transition-colors">
+                                <span class="text-xs font-bold text-slate-800 block">Budi Santoso</span>
+                                <span class="text-[10px] text-emerald-700 font-semibold block">Admin Gudang</span>
+                            </button>
+                        </form>
 
-                    <form method="POST" action="{{ route('quick-login') }}">
-                        @csrf
-                        <input type="hidden" name="email" value="tegar@gayuhmedia.id">
-                        <button type="submit" class="w-full p-2.5 rounded-xl border border-slate-200 hover:border-purple-300 hover:bg-purple-50/50 text-left transition-colors">
-                            <span class="text-xs font-bold text-slate-800 block">Tegar Pratama</span>
-                            <span class="text-[10px] text-purple-700 font-semibold block">Principal NOC</span>
-                        </button>
-                    </form>
+                        <form method="POST" action="{{ route('quick-login') }}">
+                            @csrf
+                            <input type="hidden" name="email" value="tegar@gayuhmedia.id">
+                            <button type="submit" class="w-full p-2.5 rounded-xl border border-slate-200 hover:border-purple-300 hover:bg-purple-50/50 text-left transition-colors">
+                                <span class="text-xs font-bold text-slate-800 block">Tegar Pratama</span>
+                                <span class="text-[10px] text-purple-700 font-semibold block">Principal NOC</span>
+                            </button>
+                        </form>
+                    </div>
                 </div>
-            </div>
+            @endenv
 
         </div>
 

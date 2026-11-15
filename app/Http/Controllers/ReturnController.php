@@ -3,9 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\ProcessReturnAction;
-use App\Enums\DamageCategory;
 use App\Enums\QcStatus;
-use App\Enums\RecipientType;
 use App\Http\Requests\StoreReturnRequest;
 use App\Models\Product;
 use App\Models\ReturnTransaction;
@@ -25,9 +23,9 @@ class ReturnController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('transaction_code', 'like', "%{$search}%")
-                  ->orWhere('returned_by', 'like', "%{$search}%")
-                  ->orWhere('reference_ticket_no', 'like', "%{$search}%")
-                  ->orWhere('return_category', 'like', "%{$search}%");
+                    ->orWhere('returned_by', 'like', "%{$search}%")
+                    ->orWhere('reference_ticket_no', 'like', "%{$search}%")
+                    ->orWhere('return_category', 'like', "%{$search}%");
             });
         }
 
@@ -84,9 +82,14 @@ class ReturnController extends Controller
             $data = $request->validated();
 
             // Handle optional photo proof upload per item if provided
-            if ($request->hasFile('photo_proof')) {
-                $path = $request->file('photo_proof')->store('damaged_proofs', 'public');
-                $data['items'][0]['photo_proof'] = $path;
+            foreach ($data['items'] as $idx => $item) {
+                if ($request->hasFile("items.{$idx}.photo_proof")) {
+                    $data['items'][$idx]['photo_proof'] = $request->file("items.{$idx}.photo_proof")->store('damaged_proofs', 'public');
+                }
+            }
+
+            if ($request->hasFile('photo_proof') && empty($data['items'][0]['photo_proof'])) {
+                $data['items'][0]['photo_proof'] = $request->file('photo_proof')->store('damaged_proofs', 'public');
             }
 
             $transaction = $action->execute($data, $userId);

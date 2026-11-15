@@ -213,7 +213,7 @@
 
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Foto Bukti Fisik (Opsional)</label>
-                                    <input type="file" name="photo_proof" accept="image/*" class="w-full text-xs text-slate-500 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100">
+                                    <input type="file" :name="'items[' + index + '][photo_proof]'" accept="image/*" class="w-full text-xs text-slate-500 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100">
                                 </div>
                             </div>
 

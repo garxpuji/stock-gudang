@@ -13,12 +13,11 @@ use App\Models\Location;
 use App\Models\Product;
 use App\Models\ProductSerial;
 use App\Models\ReturnTransaction;
-use App\Models\StockInTransaction;
-use App\Models\StockMutation;
 use App\Models\StockOutTransaction;
 use App\Models\Supplier;
 use App\Models\Unit;
 use App\Models\User;
+use Database\Seeders\UserSeeder;
 use Tests\TestCase;
 
 class EndToEndWorkflowTest extends TestCase
@@ -29,7 +28,7 @@ class EndToEndWorkflowTest extends TestCase
     {
         parent::setUp();
         $this->artisan('migrate:fresh', ['--database' => 'mariadb']);
-        $this->seed([\Database\Seeders\UserSeeder::class]);
+        $this->seed([UserSeeder::class]);
         $this->admin = User::where('email', 'admin@gayuhmedia.id')->firstOrFail();
     }
 
@@ -102,9 +101,9 @@ class EndToEndWorkflowTest extends TestCase
                     'product_id' => $product->id,
                     'qty' => 3,
                     'cost_price' => 250000,
-                    'serial_numbers' => "ZTEG001, ZTEG002, ZTEG003",
-                ]
-            ]
+                    'serial_numbers' => 'ZTEG001, ZTEG002, ZTEG003',
+                ],
+            ],
         ];
 
         $stockInResp = $this->actingAs($this->admin)->post(route('stock-in.store'), $inboundPayload);
@@ -138,8 +137,8 @@ class EndToEndWorkflowTest extends TestCase
                     'qty' => 2,
                     'serial_ids' => [$sn1->id, $sn2->id],
                     'notes' => 'Diserahkan dalam kondisi segel baik',
-                ]
-            ]
+                ],
+            ],
         ];
 
         $stockOutResp = $this->actingAs($this->admin)->post(route('stock-out.store'), $outboundPayload);
@@ -186,8 +185,8 @@ class EndToEndWorkflowTest extends TestCase
                     'damage_category' => DamageCategory::LIGHTNING_STRIKE->value,
                     'damage_description' => 'Port LAN gosong dan adaptor meledak',
                     'qc_notes' => 'Mati total tidak keluar power',
-                ]
-            ]
+                ],
+            ],
         ];
 
         $returnResp = $this->actingAs($this->admin)->post(route('returns.store'), $returnPayload);

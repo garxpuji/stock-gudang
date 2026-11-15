@@ -39,7 +39,7 @@ class DashboardController extends Controller
         $criticalStockProducts = Product::with(['category', 'unit', 'location'])
             ->where(function ($q) {
                 $q->whereColumn('stock', '<=', 'min_stock')
-                  ->orWhere('stock', '<=', 0);
+                    ->orWhere('stock', '<=', 0);
             })
             ->orderBy('stock', 'asc')
             ->take(6)
@@ -61,11 +61,10 @@ class DashboardController extends Controller
             ->take(8)
             ->get();
 
-        // Category breakdown
+        // Category breakdown (SQL aggregate to avoid N+1 / memory load)
         $categoriesBreakdown = Category::withCount('products')
-            ->with(['products' => function ($q) {
-                $q->select('id', 'category_id', 'stock', 'damaged_stock');
-            }])
+            ->withSum('products as total_stock', 'stock')
+            ->withSum('products as total_damaged', 'damaged_stock')
             ->get()
             ->map(function ($cat) {
                 return [
@@ -73,8 +72,8 @@ class DashboardController extends Controller
                     'name' => $cat->name,
                     'code' => $cat->code,
                     'products_count' => $cat->products_count,
-                    'total_stock' => $cat->products->sum('stock'),
-                    'total_damaged' => $cat->products->sum('damaged_stock'),
+                    'total_stock' => (float) ($cat->total_stock ?? 0),
+                    'total_damaged' => (float) ($cat->total_damaged ?? 0),
                 ];
             });
 

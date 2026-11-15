@@ -2,14 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\MutationType;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Category;
 use App\Models\Location;
 use App\Models\Product;
+use App\Models\StockMutation;
 use App\Models\Unit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class ProductController extends Controller
@@ -18,9 +22,9 @@ class ProductController extends Controller
     {
         $query = Product::with(['category', 'unit', 'location'])
             ->withCount([
-                'serials as available_serials_count' => fn($q) => $q->where('status', 'AVAILABLE'),
-                'serials as issued_serials_count' => fn($q) => $q->where('status', 'ISSUED'),
-                'serials as damaged_serials_count' => fn($q) => $q->where('status', 'DAMAGED'),
+                'serials as available_serials_count' => fn ($q) => $q->where('status', 'AVAILABLE'),
+                'serials as issued_serials_count' => fn ($q) => $q->where('status', 'ISSUED'),
+                'serials as damaged_serials_count' => fn ($q) => $q->where('status', 'DAMAGED'),
             ]);
 
         // Search
@@ -85,7 +89,31 @@ class ProductController extends Controller
 
     public function store(StoreProductRequest $request): RedirectResponse
     {
-        $product = Product::create($request->validated());
+        $product = DB::transaction(function () use ($request) {
+            $product = Product::create($request->validated());
+
+            $initialStock = (float) $product->stock;
+            $initialDamaged = (float) $product->damaged_stock;
+
+            if ($initialStock > 0 || $initialDamaged > 0) {
+                StockMutation::create([
+                    'product_id' => $product->id,
+                    'mutation_type' => MutationType::OPNAME_ADJUSTMENT,
+                    'qty' => $initialStock,
+                    'previous_stock' => 0,
+                    'current_stock' => $initialStock,
+                    'previous_damaged_stock' => 0,
+                    'current_damaged_stock' => $initialDamaged,
+                    'system_operator_id' => Auth::id(),
+                    'person_in_charge' => Auth::user()?->name ?? 'Admin Gudang',
+                    'reference_table' => 'products',
+                    'reference_id' => $product->id,
+                    'remarks' => "Saldo awal registrasi katalog produk [{$product->sku}]",
+                ]);
+            }
+
+            return $product;
+        });
 
         return redirect()->route('products.show', $product)
             ->with('success', "Perangkat/Material '{$product->name}' berhasil ditambahkan ke katalog gudang.");
@@ -111,7 +139,14 @@ class ProductController extends Controller
     public function destroy(Product $product): RedirectResponse
     {
         // Guard: jika produk memiliki riwayat mutasi / transaksi, cegah penghapusan
-        if ($product->mutations()->exists() || $product->serials()->exists() || $product->stockInItems()->exists() || $product->stockOutItems()->exists()) {
+        if (
+            $product->mutations()->exists()
+            || $product->serials()->exists()
+            || $product->stockInItems()->exists()
+            || $product->stockOutItems()->exists()
+            || $product->returnItems()->exists()
+            || $product->damagedGoods()->exists()
+        ) {
             return back()->with('error', "Perangkat/Material '{$product->name}' tidak dapat dihapus karena sudah memiliki riwayat mutasi stok atau serial number.");
         }
 

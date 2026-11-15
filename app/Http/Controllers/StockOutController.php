@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Actions\OutboundStockAction;
-use App\Enums\RecipientType;
 use App\Http\Requests\StoreOutboundRequest;
 use App\Models\Product;
 use App\Models\StockOutTransaction;
@@ -22,10 +21,10 @@ class StockOutController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('transaction_code', 'like', "%{$search}%")
-                  ->orWhere('picked_up_by', 'like', "%{$search}%")
-                  ->orWhere('reference_ticket_no', 'like', "%{$search}%")
-                  ->orWhere('recipient_department_or_team', 'like', "%{$search}%")
-                  ->orWhere('purpose', 'like', "%{$search}%");
+                    ->orWhere('picked_up_by', 'like', "%{$search}%")
+                    ->orWhere('reference_ticket_no', 'like', "%{$search}%")
+                    ->orWhere('recipient_department_or_team', 'like', "%{$search}%")
+                    ->orWhere('purpose', 'like', "%{$search}%");
             });
         }
 

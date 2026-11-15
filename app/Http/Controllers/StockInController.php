@@ -22,10 +22,10 @@ class StockInController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('transaction_code', 'like', "%{$search}%")
-                  ->orWhere('po_number', 'like', "%{$search}%")
-                  ->orWhere('vendor_delivery_order_no', 'like', "%{$search}%")
-                  ->orWhere('supplier_name', 'like', "%{$search}%")
-                  ->orWhere('courier_or_driver_name', 'like', "%{$search}%");
+                    ->orWhere('po_number', 'like', "%{$search}%")
+                    ->orWhere('vendor_delivery_order_no', 'like', "%{$search}%")
+                    ->orWhere('supplier_name', 'like', "%{$search}%")
+                    ->orWhere('courier_or_driver_name', 'like', "%{$search}%");
             });
         }
 
@@ -53,10 +53,15 @@ class StockInController extends Controller
     public function store(StoreInboundRequest $request, InboundStockAction $action): RedirectResponse
     {
         $userId = Auth::id() ?? 1;
-        $transaction = $action->execute($request->validated(), $userId);
 
-        return redirect()->route('stock-in.show', $transaction)
-            ->with('success', "Penerimaan barang masuk [{$transaction->transaction_code}] berhasil diproses.");
+        try {
+            $transaction = $action->execute($request->validated(), $userId);
+
+            return redirect()->route('stock-in.show', $transaction)
+                ->with('success', "Penerimaan barang masuk [{$transaction->transaction_code}] berhasil diproses.");
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
     }
 
     public function show(StockInTransaction $stockIn): View

@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Supplier;
 use App\Models\Unit;
 use App\Models\User;
+use Database\Seeders\UserSeeder;
 use Tests\TestCase;
 
 class MasterDataTest extends TestCase
@@ -18,7 +19,7 @@ class MasterDataTest extends TestCase
     {
         parent::setUp();
         $this->artisan('migrate:fresh', ['--database' => 'mariadb']);
-        $this->seed([\Database\Seeders\UserSeeder::class]);
+        $this->seed([UserSeeder::class]);
         $this->admin = User::where('email', 'admin@gayuhmedia.id')->firstOrFail();
     }
 
@@ -39,6 +40,11 @@ class MasterDataTest extends TestCase
         $this->assertDatabaseHas('categories', ['code' => 'CABLE-FO', 'name' => 'Kabel Drop Core FO']);
 
         $category = Category::where('code', 'CABLE-FO')->firstOrFail();
+
+        // 2b. Edit Page
+        $editPageResponse = $this->actingAs($this->admin)->get(route('categories.edit', $category));
+        $editPageResponse->assertStatus(200);
+        $editPageResponse->assertSee('Ubah Kategori');
 
         // 3. Update
         $updateResponse = $this->actingAs($this->admin)->put(route('categories.update', $category), [
@@ -114,6 +120,11 @@ class MasterDataTest extends TestCase
 
         $location = Location::where('code', 'RAK-A1')->firstOrFail();
 
+        // 2b. Edit Page
+        $editPageResponse = $this->actingAs($this->admin)->get(route('locations.edit', $location));
+        $editPageResponse->assertStatus(200);
+        $editPageResponse->assertSee('Ubah Lokasi Rak');
+
         // 3. Update
         $updateResponse = $this->actingAs($this->admin)->put(route('locations.update', $location), [
             'name' => 'Rak A1 Lantai 2',
@@ -149,6 +160,11 @@ class MasterDataTest extends TestCase
         $this->assertDatabaseHas('suppliers', ['name' => 'PT Fiber Media Distributor']);
 
         $supplier = Supplier::where('code', 'FMD-01')->firstOrFail();
+
+        // 2b. Edit Page
+        $editPageResponse = $this->actingAs($this->admin)->get(route('suppliers.edit', $supplier));
+        $editPageResponse->assertStatus(200);
+        $editPageResponse->assertSee('Ubah Supplier');
 
         // 3. Update
         $updateResponse = $this->actingAs($this->admin)->put(route('suppliers.update', $supplier), [

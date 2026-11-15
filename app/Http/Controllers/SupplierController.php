@@ -18,10 +18,10 @@ class SupplierController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%")
-                  ->orWhere('contact_name', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('code', 'like', "%{$search}%")
+                    ->orWhere('contact_name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -49,8 +49,11 @@ class SupplierController extends Controller
         $supplier = Supplier::create($validated);
 
         if ($request->filled('redirect_to')) {
-            return redirect($request->input('redirect_to'))
-                ->with('success', "Supplier '{$supplier->name}' berhasil ditambahkan.");
+            $redirectTo = (string) $request->input('redirect_to');
+            if ((str_starts_with($redirectTo, '/') && ! str_starts_with($redirectTo, '//')) || str_starts_with($redirectTo, url('/'))) {
+                return redirect($redirectTo)
+                    ->with('success', "Supplier '{$supplier->name}' berhasil ditambahkan.");
+            }
         }
 
         return redirect()->route('suppliers.index')

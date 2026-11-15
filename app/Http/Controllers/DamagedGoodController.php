@@ -4,9 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\RecordDamagedGoodsAction;
 use App\Actions\ResolveDamagedGoodsAction;
-use App\Enums\DamageCategory;
 use App\Enums\DamagedActionTaken;
-use App\Enums\RecipientType;
 use App\Http\Requests\ResolveDamagedGoodRequest;
 use App\Http\Requests\StoreDamagedGoodRequest;
 use App\Models\DamagedGood;
@@ -26,13 +24,13 @@ class DamagedGoodController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('code', 'like', "%{$search}%")
-                  ->orWhere('serial_number', 'like', "%{$search}%")
-                  ->orWhere('reported_by', 'like', "%{$search}%")
-                  ->orWhere('damage_description', 'like', "%{$search}%")
-                  ->orWhereHas('product', function ($pq) use ($search) {
-                      $pq->where('name', 'like', "%{$search}%")
-                         ->orWhere('sku', 'like', "%{$search}%");
-                  });
+                    ->orWhere('serial_number', 'like', "%{$search}%")
+                    ->orWhere('reported_by', 'like', "%{$search}%")
+                    ->orWhere('damage_description', 'like', "%{$search}%")
+                    ->orWhereHas('product', function ($pq) use ($search) {
+                        $pq->where('name', 'like', "%{$search}%")
+                            ->orWhere('sku', 'like', "%{$search}%");
+                    });
             });
         }
 

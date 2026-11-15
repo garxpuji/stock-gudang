@@ -19,12 +19,12 @@ use Illuminate\Support\Facades\Route;
 
 // Guest Authentication
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/quick-login', [AuthController::class, 'quickLogin'])->name('quick-login');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+Route::post('/quick-login', [AuthController::class, 'quickLogin'])->middleware('throttle:5,1')->name('quick-login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Protected Warehouse Routes
-Route::middleware(['web'])->group(function () {
+Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index']);
 

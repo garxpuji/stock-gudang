@@ -20,27 +20,24 @@ class RecordDamagedGoodsAction
     /**
      * Record damaged goods directly reported by technician, staff, or warehouse handling
      *
-     * @param array $data
-     * @param int $userId
-     * @return DamagedGood
      * @throws InsufficientStockException
      */
     public function execute(array $data, int $userId): DamagedGood
     {
         return DB::transaction(function () use ($data, $userId) {
-            $date = !empty($data['reported_at']) ? Carbon::parse($data['reported_at']) : Carbon::now();
+            $date = ! empty($data['reported_at']) ? Carbon::parse($data['reported_at']) : Carbon::now();
             $code = $this->generateDamagedCode($date);
 
             $damageCategory = is_string($data['damage_category'])
                 ? DamageCategory::from($data['damage_category'])
                 : $data['damage_category'];
 
-            $reporterType = !empty($data['reporter_type'])
+            $reporterType = ! empty($data['reporter_type'])
                 ? (is_string($data['reporter_type']) ? RecipientType::from($data['reporter_type']) : $data['reporter_type'])
                 : RecipientType::TEKNISI;
 
             $qty = (float) ($data['qty'] ?? 1.00);
-            $deductActive = !empty($data['deduct_from_active_stock']);
+            $deductActive = ! empty($data['deduct_from_active_stock']);
 
             /** @var Product $product */
             $product = Product::where('id', $data['product_id'])
@@ -60,8 +57,8 @@ class RecordDamagedGoodsAction
             $product->damaged_stock = $prevDamaged + $qty;
             $product->save();
 
-            $sn = !empty($data['serial_number']) ? trim($data['serial_number']) : null;
-            $mac = !empty($data['mac_address']) ? trim($data['mac_address']) : null;
+            $sn = ! empty($data['serial_number']) ? trim($data['serial_number']) : null;
+            $mac = ! empty($data['mac_address']) ? trim($data['mac_address']) : null;
 
             if ($sn) {
                 ProductSerial::updateOrCreate(
@@ -106,7 +103,7 @@ class RecordDamagedGoodsAction
                 'reference_table' => 'damaged_goods',
                 'reference_id' => $damagedGood->id,
                 'reference_ticket_no' => $data['reference_ticket_no'] ?? null,
-                'remarks' => "Laporan Barang Rusak [{$code}] dari {$data['reported_by']} ({$damageCategory->value})" . ($deductActive ? ' - Dialihkan dari stok aktif' : ' - Masuk karantina'),
+                'remarks' => "Laporan Barang Rusak [{$code}] dari {$data['reported_by']} ({$damageCategory->value})".($deductActive ? ' - Dialihkan dari stok aktif' : ' - Masuk karantina'),
             ]);
 
             return $damagedGood->load(['product.unit']);
@@ -115,8 +112,9 @@ class RecordDamagedGoodsAction
 
     protected function generateDamagedCode(Carbon $date): string
     {
-        $prefix = 'DMG-' . $date->format('Ym') . '-';
+        $prefix = 'DMG-'.$date->format('Ym').'-';
         $last = DamagedGood::where('code', 'like', "{$prefix}%")
+            ->lockForUpdate()
             ->orderBy('id', 'desc')
             ->first();
 
@@ -125,6 +123,6 @@ class RecordDamagedGoodsAction
             $number = intval($matches[1]) + 1;
         }
 
-        return $prefix . str_pad((string) $number, 4, '0', STR_PAD_LEFT);
+        return $prefix.str_pad((string) $number, 4, '0', STR_PAD_LEFT);
     }
 }

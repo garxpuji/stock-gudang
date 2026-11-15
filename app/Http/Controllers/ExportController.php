@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Enums\DamagedActionTaken;
+use App\Models\Category;
 use App\Models\DamagedGood;
+use App\Models\Location;
 use App\Models\Product;
 use App\Models\ReturnTransaction;
 use App\Models\StockOutTransaction;
@@ -14,6 +16,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -29,22 +32,22 @@ class ExportController extends Controller
 
         if ($request->filled('search')) {
             $query->search($request->input('search'));
-            $activeFilters[] = 'Pencarian: "' . $request->input('search') . '"';
+            $activeFilters[] = 'Pencarian: "'.$request->input('search').'"';
         }
 
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->input('category_id'));
-            $cat = \App\Models\Category::find($request->input('category_id'));
+            $cat = Category::find($request->input('category_id'));
             if ($cat) {
-                $activeFilters[] = 'Kategori: ' . $cat->name;
+                $activeFilters[] = 'Kategori: '.$cat->name;
             }
         }
 
         if ($request->filled('location_id')) {
             $query->where('location_id', $request->input('location_id'));
-            $loc = \App\Models\Location::find($request->input('location_id'));
+            $loc = Location::find($request->input('location_id'));
             if ($loc) {
-                $activeFilters[] = 'Lokasi: ' . $loc->name;
+                $activeFilters[] = 'Lokasi: '.$loc->name;
             }
         }
 
@@ -63,14 +66,15 @@ class ExportController extends Controller
 
         // 1. Ekspor ke PDF
         if ($type === 'pdf') {
-            $filename = 'Laporan_Stok_Tersedia_' . now()->format('Y-m-d_His') . '.pdf';
+            $filename = 'Laporan_Stok_Tersedia_'.now()->format('Y-m-d_His').'.pdf';
             $pdf = Pdf::loadView('exports.pdf.products', compact('products', 'activeFilters'))
                 ->setPaper('a4', 'landscape');
+
             return $pdf->download($filename);
         }
 
         // 2. Ekspor ke Excel (.xlsx)
-        $spreadsheet = new Spreadsheet();
+        $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Stok Tersedia');
 
@@ -96,7 +100,7 @@ class ExportController extends Controller
         $no = 1;
         foreach ($products as $p) {
             $serials = $p->availableSerials->pluck('serial_number')->implode(', ');
-            $totalVal = (float)$p->stock * (float)$p->cost_price;
+            $totalVal = (float) $p->stock * (float) $p->cost_price;
 
             $dataRows[] = [
                 $no++,
@@ -106,13 +110,13 @@ class ExportController extends Controller
                 $p->category?->name ?? '-',
                 $p->unit?->name ?? '-',
                 $p->location?->name ?? 'Gudang Utama',
-                (float)$p->stock,
-                (float)$p->damaged_stock,
-                (float)$p->min_stock,
+                (float) $p->stock,
+                (float) $p->damaged_stock,
+                (float) $p->min_stock,
                 $p->stock_status->label(),
                 $p->has_serial_number ? 'Ya' : 'Tidak',
                 $serials ?: '-',
-                (float)$p->cost_price,
+                (float) $p->cost_price,
                 $totalVal,
             ];
         }
@@ -125,7 +129,8 @@ class ExportController extends Controller
             15 => '#,##0',
         ]);
 
-        $filename = 'Laporan_Stok_Tersedia_' . now()->format('Y-m-d_His') . '.xlsx';
+        $filename = 'Laporan_Stok_Tersedia_'.now()->format('Y-m-d_His').'.xlsx';
+
         return $this->downloadExcelResponse($spreadsheet, $filename);
     }
 
@@ -139,34 +144,34 @@ class ExportController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $activeFilters[] = 'Pencarian: "' . $search . '"';
+            $activeFilters[] = 'Pencarian: "'.$search.'"';
             $query->where(function ($q) use ($search) {
                 $q->where('transaction_code', 'like', "%{$search}%")
-                  ->orWhere('picked_up_by', 'like', "%{$search}%")
-                  ->orWhere('reference_ticket_no', 'like', "%{$search}%")
-                  ->orWhere('recipient_department_or_team', 'like', "%{$search}%")
-                  ->orWhere('purpose', 'like', "%{$search}%");
+                    ->orWhere('picked_up_by', 'like', "%{$search}%")
+                    ->orWhere('reference_ticket_no', 'like', "%{$search}%")
+                    ->orWhere('recipient_department_or_team', 'like', "%{$search}%")
+                    ->orWhere('purpose', 'like', "%{$search}%");
             });
         }
 
         if ($request->filled('technician')) {
             $query->where('picked_up_by', $request->input('technician'));
-            $activeFilters[] = 'Teknisi: ' . $request->input('technician');
+            $activeFilters[] = 'Teknisi: '.$request->input('technician');
         }
 
         if ($request->filled('recipient_type')) {
             $query->where('recipient_type', $request->input('recipient_type'));
-            $activeFilters[] = 'Tipe Penerima: ' . $request->input('recipient_type');
+            $activeFilters[] = 'Tipe Penerima: '.$request->input('recipient_type');
         }
 
         if ($request->filled('date_from')) {
             $query->whereDate('transaction_date', '>=', $request->input('date_from'));
-            $activeFilters[] = 'Dari: ' . $request->input('date_from');
+            $activeFilters[] = 'Dari: '.$request->input('date_from');
         }
 
         if ($request->filled('date_to')) {
             $query->whereDate('transaction_date', '<=', $request->input('date_to'));
-            $activeFilters[] = 'Sampai: ' . $request->input('date_to');
+            $activeFilters[] = 'Sampai: '.$request->input('date_to');
         }
 
         $transactions = $query->latest('transaction_date')->latest('id')->get();
@@ -174,14 +179,15 @@ class ExportController extends Controller
 
         // 1. Ekspor ke PDF
         if ($type === 'pdf') {
-            $filename = 'Laporan_Barang_Keluar_' . now()->format('Y-m-d_His') . '.pdf';
+            $filename = 'Laporan_Barang_Keluar_'.now()->format('Y-m-d_His').'.pdf';
             $pdf = Pdf::loadView('exports.pdf.stock-out', compact('transactions', 'activeFilters'))
                 ->setPaper('a4', 'landscape');
+
             return $pdf->download($filename);
         }
 
         // 2. Ekspor ke Excel (.xlsx)
-        $spreadsheet = new Spreadsheet();
+        $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Barang Keluar');
 
@@ -209,7 +215,7 @@ class ExportController extends Controller
         foreach ($transactions as $tx) {
             foreach ($tx->items as $item) {
                 $sns = $item->serials->pluck('serial_number')->implode(', ');
-                if (empty($sns) && !empty($item->notes) && str_contains($item->notes, 'SN:')) {
+                if (empty($sns) && ! empty($item->notes) && str_contains($item->notes, 'SN:')) {
                     $sns = $item->notes;
                 }
 
@@ -225,7 +231,7 @@ class ExportController extends Controller
                     $tx->purpose ?? '-',
                     $item->product?->sku ?? '-',
                     $item->product?->name ?? '-',
-                    (float)$item->qty,
+                    (float) $item->qty,
                     $item->product?->unit?->abbreviation ?? '-',
                     $sns ?: '-',
                     $tx->dispatchedBy?->name ?? 'Admin Gudang',
@@ -238,7 +244,8 @@ class ExportController extends Controller
             12 => '#,##0',
         ]);
 
-        $filename = 'Laporan_Barang_Keluar_' . now()->format('Y-m-d_His') . '.xlsx';
+        $filename = 'Laporan_Barang_Keluar_'.now()->format('Y-m-d_His').'.xlsx';
+
         return $this->downloadExcelResponse($spreadsheet, $filename);
     }
 
@@ -252,35 +259,35 @@ class ExportController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $activeFilters[] = 'Pencarian: "' . $search . '"';
+            $activeFilters[] = 'Pencarian: "'.$search.'"';
             $query->where(function ($q) use ($search) {
                 $q->where('transaction_code', 'like', "%{$search}%")
-                  ->orWhere('returned_by', 'like', "%{$search}%")
-                  ->orWhere('reference_ticket_no', 'like', "%{$search}%")
-                  ->orWhere('return_category', 'like', "%{$search}%");
+                    ->orWhere('returned_by', 'like', "%{$search}%")
+                    ->orWhere('reference_ticket_no', 'like', "%{$search}%")
+                    ->orWhere('return_category', 'like', "%{$search}%");
             });
         }
 
         if ($request->filled('technician')) {
             $query->where('returned_by', $request->input('technician'));
-            $activeFilters[] = 'Teknisi: ' . $request->input('technician');
+            $activeFilters[] = 'Teknisi: '.$request->input('technician');
         }
 
         if ($request->filled('date_from')) {
             $query->whereDate('transaction_date', '>=', $request->input('date_from'));
-            $activeFilters[] = 'Dari: ' . $request->input('date_from');
+            $activeFilters[] = 'Dari: '.$request->input('date_from');
         }
 
         if ($request->filled('date_to')) {
             $query->whereDate('transaction_date', '<=', $request->input('date_to'));
-            $activeFilters[] = 'Sampai: ' . $request->input('date_to');
+            $activeFilters[] = 'Sampai: '.$request->input('date_to');
         }
 
         if ($request->filled('qc_status')) {
             $query->whereHas('items', function ($iq) use ($request) {
                 $iq->where('qc_status', $request->input('qc_status'));
             });
-            $activeFilters[] = 'Status QC: ' . $request->input('qc_status');
+            $activeFilters[] = 'Status QC: '.$request->input('qc_status');
         }
 
         $returns = $query->latest('transaction_date')->latest('id')->get();
@@ -288,14 +295,15 @@ class ExportController extends Controller
 
         // 1. Ekspor ke PDF
         if ($type === 'pdf') {
-            $filename = 'Laporan_Barang_Kembali_' . now()->format('Y-m-d_His') . '.pdf';
+            $filename = 'Laporan_Barang_Kembali_'.now()->format('Y-m-d_His').'.pdf';
             $pdf = Pdf::loadView('exports.pdf.returns', compact('returns', 'activeFilters'))
                 ->setPaper('a4', 'landscape');
+
             return $pdf->download($filename);
         }
 
         // 2. Ekspor ke Excel (.xlsx)
-        $spreadsheet = new Spreadsheet();
+        $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Barang Kembali Retur');
 
@@ -334,7 +342,7 @@ class ExportController extends Controller
                     $ret->reference_ticket_no ?? '-',
                     $item->product?->sku ?? '-',
                     $item->product?->name ?? '-',
-                    (float)$item->qty,
+                    (float) $item->qty,
                     $item->product?->unit?->abbreviation ?? '-',
                     $item->qc_status?->label() ?? '-',
                     $item->action_taken ?? '-',
@@ -351,7 +359,8 @@ class ExportController extends Controller
             10 => '#,##0',
         ]);
 
-        $filename = 'Laporan_Barang_Kembali_' . now()->format('Y-m-d_His') . '.xlsx';
+        $filename = 'Laporan_Barang_Kembali_'.now()->format('Y-m-d_His').'.xlsx';
+
         return $this->downloadExcelResponse($spreadsheet, $filename);
     }
 
@@ -365,22 +374,22 @@ class ExportController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $activeFilters[] = 'Pencarian: "' . $search . '"';
+            $activeFilters[] = 'Pencarian: "'.$search.'"';
             $query->where(function ($q) use ($search) {
                 $q->where('code', 'like', "%{$search}%")
-                  ->orWhere('serial_number', 'like', "%{$search}%")
-                  ->orWhere('reported_by', 'like', "%{$search}%")
-                  ->orWhere('damage_description', 'like', "%{$search}%")
-                  ->orWhereHas('product', function ($pq) use ($search) {
-                      $pq->where('name', 'like', "%{$search}%")
-                         ->orWhere('sku', 'like', "%{$search}%");
-                  });
+                    ->orWhere('serial_number', 'like', "%{$search}%")
+                    ->orWhere('reported_by', 'like', "%{$search}%")
+                    ->orWhere('damage_description', 'like', "%{$search}%")
+                    ->orWhereHas('product', function ($pq) use ($search) {
+                        $pq->where('name', 'like', "%{$search}%")
+                            ->orWhere('sku', 'like', "%{$search}%");
+                    });
             });
         }
 
         if ($request->filled('technician')) {
             $query->where('reported_by', $request->input('technician'));
-            $activeFilters[] = 'Teknisi: ' . $request->input('technician');
+            $activeFilters[] = 'Teknisi: '.$request->input('technician');
         }
 
         if ($request->filled('action_taken')) {
@@ -392,23 +401,23 @@ class ExportController extends Controller
                 $activeFilters[] = 'Status: Selesai Ditindaklanjuti';
             } else {
                 $query->where('action_taken', $request->input('action_taken'));
-                $activeFilters[] = 'Tindakan: ' . $request->input('action_taken');
+                $activeFilters[] = 'Tindakan: '.$request->input('action_taken');
             }
         }
 
         if ($request->filled('category')) {
             $query->where('damage_category', $request->input('category'));
-            $activeFilters[] = 'Kategori: ' . $request->input('category');
+            $activeFilters[] = 'Kategori: '.$request->input('category');
         }
 
         if ($request->filled('date_from')) {
             $query->whereDate('reported_at', '>=', $request->input('date_from'));
-            $activeFilters[] = 'Dari: ' . $request->input('date_from');
+            $activeFilters[] = 'Dari: '.$request->input('date_from');
         }
 
         if ($request->filled('date_to')) {
             $query->whereDate('reported_at', '<=', $request->input('date_to'));
-            $activeFilters[] = 'Sampai: ' . $request->input('date_to');
+            $activeFilters[] = 'Sampai: '.$request->input('date_to');
         }
 
         $damagedGoods = $query->latest('reported_at')->get();
@@ -416,14 +425,15 @@ class ExportController extends Controller
 
         // 1. Ekspor ke PDF
         if ($type === 'pdf') {
-            $filename = 'Laporan_Barang_Rusak_' . now()->format('Y-m-d_His') . '.pdf';
+            $filename = 'Laporan_Barang_Rusak_'.now()->format('Y-m-d_His').'.pdf';
             $pdf = Pdf::loadView('exports.pdf.damaged-goods', compact('damagedGoods', 'activeFilters'))
                 ->setPaper('a4', 'landscape');
+
             return $pdf->download($filename);
         }
 
         // 2. Ekspor ke Excel (.xlsx)
-        $spreadsheet = new Spreadsheet();
+        $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Barang Rusak Karantina');
 
@@ -459,7 +469,7 @@ class ExportController extends Controller
                 $dmg->product?->name ?? '-',
                 $dmg->serial_number ?: '-',
                 $dmg->mac_address ?: '-',
-                (float)$dmg->qty,
+                (float) $dmg->qty,
                 $dmg->product?->unit?->abbreviation ?? '-',
                 $dmg->damage_category?->value ?? '-',
                 $dmg->reported_by ?? '-',
@@ -469,7 +479,7 @@ class ExportController extends Controller
                 $dmg->action_date ? $dmg->action_date->format('Y-m-d H:i:s') : '-',
                 $dmg->resolvedBy?->name ?? '-',
                 $dmg->action_notes ?? '-',
-                (float)$dmg->loss_cost,
+                (float) $dmg->loss_cost,
             ];
         }
 
@@ -478,14 +488,15 @@ class ExportController extends Controller
             18 => '#,##0',
         ]);
 
-        $filename = 'Laporan_Barang_Rusak_' . now()->format('Y-m-d_His') . '.xlsx';
+        $filename = 'Laporan_Barang_Rusak_'.now()->format('Y-m-d_His').'.xlsx';
+
         return $this->downloadExcelResponse($spreadsheet, $filename);
     }
 
     /**
      * Helper untuk styling dan pengisian data pada worksheet Excel (.xlsx)
      */
-    private function buildExcelSheet(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet, string $reportTitle, array $headers, array $dataRows, array $numberFormatColumns = []): void
+    private function buildExcelSheet(Worksheet $sheet, string $reportTitle, array $headers, array $dataRows, array $numberFormatColumns = []): void
     {
         $colCount = count($headers);
         $lastColLetter = Coordinate::stringFromColumnIndex($colCount);
@@ -494,14 +505,14 @@ class ExportController extends Controller
         $sheet->setCellValue('A1', 'PT GAYUH MEDIA INFORMATIKA');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14)->getColor()->setARGB('FF059669');
 
-        $sheet->setCellValue('A2', $reportTitle . ' • Dicetak: ' . now()->translatedFormat('d F Y, H:i') . ' WIB');
+        $sheet->setCellValue('A2', $reportTitle.' • Dicetak: '.now()->translatedFormat('d F Y, H:i').' WIB');
         $sheet->getStyle('A2')->getFont()->setSize(9)->getColor()->setARGB('FF64748B');
 
         // 2. Baris Header Tabel (Row 4)
         $headerRow = 4;
         foreach ($headers as $colIndex => $headerText) {
             $colLetter = Coordinate::stringFromColumnIndex($colIndex + 1);
-            $sheet->setCellValue($colLetter . $headerRow, $headerText);
+            $sheet->setCellValue($colLetter.$headerRow, $headerText);
         }
 
         $headerRange = "A{$headerRow}:{$lastColLetter}{$headerRow}";
@@ -536,7 +547,7 @@ class ExportController extends Controller
         foreach ($dataRows as $row) {
             foreach ($row as $colIndex => $val) {
                 $colLetter = Coordinate::stringFromColumnIndex($colIndex + 1);
-                $sheet->setCellValue($colLetter . $currentRow, $val);
+                $sheet->setCellValue($colLetter.$currentRow, $val);
             }
 
             // Zebra striping untuk baris genap
@@ -553,7 +564,7 @@ class ExportController extends Controller
         $lastDataRow = max($startRow, $currentRow - 1);
         $dataRange = "A{$startRow}:{$lastColLetter}{$lastDataRow}";
 
-        if (!empty($dataRows)) {
+        if (! empty($dataRows)) {
             $sheet->getStyle($dataRange)->applyFromArray([
                 'font' => [
                     'size' => 9,

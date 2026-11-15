@@ -11,10 +11,6 @@ class StockOpnameAction
 {
     /**
      * Reconcile physical warehouse stock with system inventory (Stock Opname)
-     *
-     * @param array $data
-     * @param int $userId
-     * @return Product
      */
     public function execute(array $data, int $userId): Product
     {
@@ -28,8 +24,8 @@ class StockOpnameAction
             $prevDamaged = (float) $product->damaged_stock;
 
             $actualStock = (float) $data['actual_stock'];
-            $actualDamaged = isset($data['actual_damaged_stock']) 
-                ? (float) $data['actual_damaged_stock'] 
+            $actualDamaged = isset($data['actual_damaged_stock'])
+                ? (float) $data['actual_damaged_stock']
                 : $prevDamaged;
 
             $diffStock = $actualStock - $prevStock;
@@ -39,8 +35,8 @@ class StockOpnameAction
             $product->damaged_stock = $actualDamaged;
             $product->save();
 
-            $personInCharge = !empty($data['person_in_charge']) 
-                ? trim($data['person_in_charge']) 
+            $personInCharge = ! empty($data['person_in_charge'])
+                ? trim($data['person_in_charge'])
                 : 'Auditor Gudang';
 
             $signStock = $diffStock >= 0 ? "+{$diffStock}" : (string) $diffStock;
@@ -59,7 +55,7 @@ class StockOpnameAction
                 'reference_table' => 'products',
                 'reference_id' => $product->id,
                 'reference_ticket_no' => $data['reference_doc_no'] ?? null,
-                'remarks' => "Penyesuaian Stok Opname: Stok aktif ({$signStock}), Rusak ({$signDamaged}). Catatan: " . ($data['notes'] ?? 'Pencocokan fisik berkala'),
+                'remarks' => "Penyesuaian Stok Opname: Stok aktif ({$signStock}), Rusak ({$signDamaged}). Catatan: ".($data['notes'] ?? 'Pencocokan fisik berkala'),
             ]);
 
             return $product->load(['category', 'unit', 'location']);

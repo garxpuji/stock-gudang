@@ -17,12 +17,6 @@ class ResolveDamagedGoodsAction
 {
     /**
      * Resolve quarantined damaged goods: RMA Vendor, Scrapped / Disposal, or Internal Repair
-     *
-     * @param int $damagedGoodId
-     * @param string|DamagedActionTaken $actionTaken
-     * @param array $options
-     * @param int $userId
-     * @return DamagedGood
      */
     public function execute(int $damagedGoodId, string|DamagedActionTaken $actionTaken, array $options, int $userId): DamagedGood
     {
@@ -52,7 +46,7 @@ class ResolveDamagedGoodsAction
             $product->damaged_stock = $newDamaged;
 
             $now = Carbon::now();
-            $lossCost = !empty($options['loss_cost']) ? (float) $options['loss_cost'] : null;
+            $lossCost = ! empty($options['loss_cost']) ? (float) $options['loss_cost'] : null;
             $actionNotes = $options['action_notes'] ?? null;
 
             if ($action === DamagedActionTaken::RMA_VENDOR) {
@@ -81,7 +75,7 @@ class ResolveDamagedGoodsAction
                     'reference_table' => 'damaged_goods',
                     'reference_id' => $damagedGood->id,
                     'reference_ticket_no' => $options['rma_number'] ?? null,
-                    'remarks' => "Klaim Garansi Vendor (RMA) [{$damagedGood->code}]: " . ($actionNotes ?? 'Pengiriman unit rusak ke supplier/distributor'),
+                    'remarks' => "Klaim Garansi Vendor (RMA) [{$damagedGood->code}]: ".($actionNotes ?? 'Pengiriman unit rusak ke supplier/distributor'),
                 ]);
 
             } elseif ($action === DamagedActionTaken::SCRAPPED) {
@@ -96,7 +90,7 @@ class ResolveDamagedGoodsAction
                         ->where('serial_number', $damagedGood->serial_number)
                         ->update([
                             'status' => SerialStatus::SCRAPPED,
-                            'notes' => "Afkir / Dimusnahkan via {$damagedGood->code}. Nilai kerugian aset: Rp " . number_format($calculatedLoss, 0, ',', '.'),
+                            'notes' => "Afkir / Dimusnahkan via {$damagedGood->code}. Nilai kerugian aset: Rp ".number_format($calculatedLoss, 0, ',', '.'),
                         ]);
                 }
 
@@ -113,7 +107,7 @@ class ResolveDamagedGoodsAction
                     'reference_table' => 'damaged_goods',
                     'reference_id' => $damagedGood->id,
                     'reference_ticket_no' => null,
-                    'remarks' => "Pemusnahan / Write-Off Aset [{$damagedGood->code}] - Kerugian Aset: Rp " . number_format($calculatedLoss, 0, ',', '.') . " (" . ($actionNotes ?? 'Barang tidak dapat diperbaiki') . ")",
+                    'remarks' => "Pemusnahan / Write-Off Aset [{$damagedGood->code}] - Kerugian Aset: Rp ".number_format($calculatedLoss, 0, ',', '.').' ('.($actionNotes ?? 'Barang tidak dapat diperbaiki').')',
                 ]);
 
             } elseif ($action === DamagedActionTaken::REPAIRED_INTERNAL) {

@@ -12,8 +12,15 @@ use Illuminate\View\View;
 
 class UserController extends Controller
 {
+    private function authorizeAdminAccess(): void
+    {
+        abort_unless(Auth::user()?->isAdminGudang(), 403, 'Akses ditolak. Hanya Administrator yang dapat mengelola pengguna.');
+    }
+
     public function index(Request $request): View
     {
+        $this->authorizeAdminAccess();
+
         $query = User::query();
 
         // Search
@@ -55,11 +62,15 @@ class UserController extends Controller
 
     public function create(): View
     {
+        $this->authorizeAdminAccess();
+
         return view('users.create');
     }
 
     public function store(Request $request): RedirectResponse
     {
+        $this->authorizeAdminAccess();
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
@@ -84,11 +95,15 @@ class UserController extends Controller
 
     public function edit(User $user): View
     {
+        $this->authorizeAdminAccess();
+
         return view('users.edit', compact('user'));
     }
 
     public function update(Request $request, User $user): RedirectResponse
     {
+        $this->authorizeAdminAccess();
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
@@ -123,16 +138,25 @@ class UserController extends Controller
 
     public function destroy(User $user): RedirectResponse
     {
+        $this->authorizeAdminAccess();
+
         if (Auth::id() === $user->id) {
             return back()->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
         }
 
-        // Cek relasi transaksi penting
-        if ($user->stockIns()->exists() || $user->stockOuts()->exists() || $user->returns()->exists()) {
+        // Cek seluruh relasi transaksi & audit log
+        if (
+            $user->stockIns()->exists()
+            || $user->stockOuts()->exists()
+            || $user->returns()->exists()
+            || $user->mutations()->exists()
+            || $user->resolvedDamagedGoods()->exists()
+        ) {
             // Menonaktifkan alih-alih menghapus agar integritas audit log terjaga
             $user->update(['is_active' => false]);
+
             return redirect()->route('users.index')
-                ->with('success', "Pengguna memiliki riwayat transaksi gudang. Status akun diubah menjadi Nonaktif.");
+                ->with('success', 'Pengguna memiliki riwayat transaksi gudang. Status akun diubah menjadi Nonaktif.');
         }
 
         $userName = $user->name;

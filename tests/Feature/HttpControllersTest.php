@@ -8,10 +8,17 @@ use App\Enums\QcStatus;
 use App\Enums\RecipientType;
 use App\Models\DamagedGood;
 use App\Models\Product;
-use App\Models\ProductSerial;
 use App\Models\ReturnTransaction;
 use App\Models\StockOutTransaction;
 use App\Models\User;
+use Database\Seeders\CategorySeeder;
+use Database\Seeders\InitialTransactionsSeeder;
+use Database\Seeders\LocationSeeder;
+use Database\Seeders\ProductSeeder;
+use Database\Seeders\ProductSerialSeeder;
+use Database\Seeders\SupplierSeeder;
+use Database\Seeders\UnitSeeder;
+use Database\Seeders\UserSeeder;
 use Tests\TestCase;
 
 class HttpControllersTest extends TestCase
@@ -23,14 +30,14 @@ class HttpControllersTest extends TestCase
         parent::setUp();
         $this->artisan('migrate:fresh', ['--database' => 'mariadb']);
         $this->seed([
-            \Database\Seeders\UserSeeder::class,
-            \Database\Seeders\CategorySeeder::class,
-            \Database\Seeders\UnitSeeder::class,
-            \Database\Seeders\LocationSeeder::class,
-            \Database\Seeders\SupplierSeeder::class,
-            \Database\Seeders\ProductSeeder::class,
-            \Database\Seeders\ProductSerialSeeder::class,
-            \Database\Seeders\InitialTransactionsSeeder::class,
+            UserSeeder::class,
+            CategorySeeder::class,
+            UnitSeeder::class,
+            LocationSeeder::class,
+            SupplierSeeder::class,
+            ProductSeeder::class,
+            ProductSerialSeeder::class,
+            InitialTransactionsSeeder::class,
         ]);
         $this->admin = User::where('email', 'admin@gayuhmedia.id')->firstOrFail();
     }

@@ -17,19 +17,19 @@ return new class extends Migration
             $table->foreignId('category_id')->constrained('categories')->restrictOnDelete();
             $table->foreignId('unit_id')->constrained('units')->restrictOnDelete();
             $table->foreignId('location_id')->nullable()->constrained('locations')->nullOnDelete();
-            
+
             // Stock balances & threshold
             $table->decimal('stock', 12, 2)->default(0);
             $table->decimal('damaged_stock', 12, 2)->default(0);
             $table->decimal('min_stock', 12, 2)->default(5.00);
             $table->decimal('cost_price', 15, 2)->default(0.00);
-            
+
             // Device characteristics
             $table->boolean('has_serial_number')->default(false);
             $table->text('specification')->nullable();
             $table->text('stock_notes')->nullable();
             $table->string('image')->nullable();
-            
+
             $table->timestamps();
 
             // Strategic index

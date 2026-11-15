@@ -21,18 +21,14 @@ class ProcessReturnAction
 {
     /**
      * Process return of materials/tools/devices with Quality Control (QC) branching
-     *
-     * @param array $data
-     * @param int $userId
-     * @return ReturnTransaction
      */
     public function execute(array $data, int $userId): ReturnTransaction
     {
         return DB::transaction(function () use ($data, $userId) {
-            $date = !empty($data['transaction_date']) ? Carbon::parse($data['transaction_date']) : Carbon::now();
+            $date = ! empty($data['transaction_date']) ? Carbon::parse($data['transaction_date']) : Carbon::now();
             $code = $this->generateTransactionCode($date);
 
-            $recipientType = !empty($data['recipient_type'])
+            $recipientType = ! empty($data['recipient_type'])
                 ? (is_string($data['recipient_type']) ? RecipientType::from($data['recipient_type']) : $data['recipient_type'])
                 : RecipientType::TEKNISI;
 
@@ -54,8 +50,8 @@ class ProcessReturnAction
             // 2. Process Items with QC Inspection Branching
             foreach ($data['items'] as $item) {
                 $qty = (float) $item['qty'];
-                $qcStatus = is_string($item['qc_status']) 
-                    ? QcStatus::from($item['qc_status']) 
+                $qcStatus = is_string($item['qc_status'])
+                    ? QcStatus::from($item['qc_status'])
                     : $item['qc_status'];
 
                 /** @var Product $product */
@@ -66,8 +62,8 @@ class ProcessReturnAction
                 $previousStock = (float) $product->stock;
                 $previousDamagedStock = (float) $product->damaged_stock;
 
-                $sn = !empty($item['serial_number']) ? trim($item['serial_number']) : null;
-                $mac = !empty($item['mac_address']) ? trim($item['mac_address']) : null;
+                $sn = ! empty($item['serial_number']) ? trim($item['serial_number']) : null;
+                $mac = ! empty($item['mac_address']) ? trim($item['mac_address']) : null;
 
                 if ($qcStatus === QcStatus::GOOD) {
                     // QC Status: BAIK / LAYAK PAKAI -> RESTOCK KE STOK AKTIF
@@ -158,7 +154,7 @@ class ProcessReturnAction
                     ]);
 
                     // Route directly to damaged_goods table
-                    $damageCategory = !empty($item['damage_category'])
+                    $damageCategory = ! empty($item['damage_category'])
                         ? (is_string($item['damage_category']) ? DamageCategory::from($item['damage_category']) : $item['damage_category'])
                         : DamageCategory::PHYSICAL_DEFECT;
 
@@ -206,8 +202,9 @@ class ProcessReturnAction
 
     protected function generateTransactionCode(Carbon $date): string
     {
-        $prefix = 'RET-' . $date->format('Ym') . '-';
+        $prefix = 'RET-'.$date->format('Ym').'-';
         $last = ReturnTransaction::where('transaction_code', 'like', "{$prefix}%")
+            ->lockForUpdate()
             ->orderBy('id', 'desc')
             ->first();
 
@@ -216,13 +213,14 @@ class ProcessReturnAction
             $number = intval($matches[1]) + 1;
         }
 
-        return $prefix . str_pad((string) $number, 4, '0', STR_PAD_LEFT);
+        return $prefix.str_pad((string) $number, 4, '0', STR_PAD_LEFT);
     }
 
     protected function generateDamagedCode(Carbon $date): string
     {
-        $prefix = 'DMG-' . $date->format('Ym') . '-';
+        $prefix = 'DMG-'.$date->format('Ym').'-';
         $last = DamagedGood::where('code', 'like', "{$prefix}%")
+            ->lockForUpdate()
             ->orderBy('id', 'desc')
             ->first();
 
@@ -231,6 +229,6 @@ class ProcessReturnAction
             $number = intval($matches[1]) + 1;
         }
 
-        return $prefix . str_pad((string) $number, 4, '0', STR_PAD_LEFT);
+        return $prefix.str_pad((string) $number, 4, '0', STR_PAD_LEFT);
     }
 }

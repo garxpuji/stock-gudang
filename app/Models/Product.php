@@ -129,14 +129,16 @@ class Product extends Model
     {
         $val = (float) $this->stock;
         $formatted = (floor($val) == $val) ? number_format($val, 0) : number_format($val, 2);
-        return $formatted . ' ' . ($this->unit?->abbreviation ?? '');
+
+        return $formatted.' '.($this->unit?->abbreviation ?? '');
     }
 
     public function getFormattedDamagedStockAttribute(): string
     {
         $val = (float) $this->damaged_stock;
         $formatted = (floor($val) == $val) ? number_format($val, 0) : number_format($val, 2);
-        return $formatted . ' ' . ($this->unit?->abbreviation ?? '');
+
+        return $formatted.' '.($this->unit?->abbreviation ?? '');
     }
 
     // Scopes
@@ -163,12 +165,12 @@ class Product extends Model
 
         return $query->where(function ($q) use ($term) {
             $q->where('name', 'like', "%{$term}%")
-              ->orWhere('sku', 'like', "%{$term}%")
-              ->orWhere('barcode', 'like', "%{$term}%")
-              ->orWhereHas('serials', function ($sq) use ($term) {
-                  $sq->where('serial_number', 'like', "%{$term}%")
-                     ->orWhere('mac_address', 'like', "%{$term}%");
-              });
+                ->orWhere('sku', 'like', "%{$term}%")
+                ->orWhere('barcode', 'like', "%{$term}%")
+                ->orWhereHas('serials', function ($sq) use ($term) {
+                    $sq->where('serial_number', 'like', "%{$term}%")
+                        ->orWhere('mac_address', 'like', "%{$term}%");
+                });
         });
     }
 }

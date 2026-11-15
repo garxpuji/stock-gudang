@@ -41,10 +41,7 @@
     <a href="{{ route('damaged-goods.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs('damaged-goods.*') ? 'bg-emerald-50 text-emerald-800 font-semibold border border-emerald-200' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
         <svg class="w-5 h-5 {{ request()->routeIs('damaged-goods.*') ? 'text-orange-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
         <span class="flex-1">Barang Rusak & RMA</span>
-        @php
-            $pendingDmg = \App\Models\DamagedGood::where('action_taken', 'PENDING')->count();
-        @endphp
-        @if($pendingDmg > 0)
+        @if(($pendingDmg ?? 0) > 0)
             <span class="text-[11px] bg-orange-100 text-orange-800 font-bold px-2 py-0.5 rounded-full">{{ $pendingDmg }}</span>
         @endif
     </a>
@@ -107,9 +104,6 @@
     <a href="{{ route('users.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs('users.*') ? 'bg-emerald-50 text-emerald-800 font-semibold border border-emerald-200' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
         <svg class="w-5 h-5 {{ request()->routeIs('users.*') ? 'text-emerald-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
         <span class="flex-1">Kelola User</span>
-        @php
-            $totalUserCount = \App\Models\User::count();
-        @endphp
-        <span class="text-[11px] bg-slate-100 text-slate-600 font-semibold px-2 py-0.5 rounded-full">{{ $totalUserCount }}</span>
+        <span class="text-[11px] bg-slate-100 text-slate-600 font-semibold px-2 py-0.5 rounded-full">{{ $totalUserCount ?? 0 }}</span>
     </a>
 </div>

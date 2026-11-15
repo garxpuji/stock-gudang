@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Database\Seeders\UserSeeder;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -14,7 +15,7 @@ class UserControllerTest extends TestCase
     {
         parent::setUp();
         $this->artisan('migrate:fresh', ['--database' => 'mariadb']);
-        $this->seed([\Database\Seeders\UserSeeder::class]);
+        $this->seed([UserSeeder::class]);
         $this->admin = User::where('email', 'admin@gayuhmedia.id')->firstOrFail();
     }
 
@@ -114,5 +115,33 @@ class UserControllerTest extends TestCase
         $this->assertDatabaseMissing('users', [
             'id' => $targetUser->id,
         ]);
+    }
+
+    public function test_inactive_user_cannot_login(): void
+    {
+        $targetUser = User::where('email', 'gudang@gayuhmedia.id')->firstOrFail();
+        $targetUser->update(['is_active' => false]);
+
+        $response = $this->post(route('login'), [
+            'email' => $targetUser->email,
+            'password' => 'password',
+        ]);
+
+        $response->assertSessionHasErrors('email');
+        $this->assertGuest();
+    }
+
+    public function test_non_admin_user_cannot_access_user_management(): void
+    {
+        $staff = User::create([
+            'name' => 'Staff Biasa',
+            'email' => 'staff@gayuhmedia.id',
+            'role' => 'staff_gudang',
+            'password' => Hash::make('password'),
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($staff)->get(route('users.index'));
+        $response->assertStatus(403);
     }
 }

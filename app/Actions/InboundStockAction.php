@@ -11,21 +11,16 @@ use App\Models\StockInTransaction;
 use App\Models\StockMutation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class InboundStockAction
 {
     /**
      * Process inbound stock from supplier / distributor
-     *
-     * @param array $data
-     * @param int $userId
-     * @return StockInTransaction
      */
     public function execute(array $data, int $userId): StockInTransaction
     {
         return DB::transaction(function () use ($data, $userId) {
-            $date = !empty($data['transaction_date']) ? Carbon::parse($data['transaction_date']) : Carbon::now();
+            $date = ! empty($data['transaction_date']) ? Carbon::parse($data['transaction_date']) : Carbon::now();
             $code = $this->generateTransactionCode($date);
 
             $totalItems = 0;
@@ -71,34 +66,34 @@ class InboundStockAction
                 $serialsString = null;
                 $snList = [];
 
-                if (!empty($item['serials']) && is_array($item['serials'])) {
+                if (! empty($item['serials']) && is_array($item['serials'])) {
                     foreach ($item['serials'] as $snData) {
                         $sn = is_array($snData) ? trim($snData['serial_number'] ?? '') : trim((string) $snData);
                         $mac = is_array($snData) ? trim($snData['mac_address'] ?? '') : null;
 
-                        if (!empty($sn)) {
+                        if (! empty($sn)) {
                             ProductSerial::updateOrCreate(
                                 [
                                     'product_id' => $product->id,
                                     'serial_number' => $sn,
                                 ],
                                 [
-                                    'mac_address' => !empty($mac) ? $mac : null,
+                                    'mac_address' => ! empty($mac) ? $mac : null,
                                     'status' => SerialStatus::AVAILABLE,
-                                    'notes' => 'Penerimaan masuk via ' . $code,
+                                    'notes' => 'Penerimaan masuk via '.$code,
                                 ]
                             );
                             $snList[] = $sn;
                         }
                     }
-                } elseif (!empty($item['serial_numbers'])) {
+                } elseif (! empty($item['serial_numbers'])) {
                     $rawSerials = is_array($item['serial_numbers'])
                         ? $item['serial_numbers']
                         : preg_split('/[\r\n,;]+/', (string) $item['serial_numbers'], -1, PREG_SPLIT_NO_EMPTY);
 
                     foreach ($rawSerials as $rawSn) {
                         $sn = trim((string) $rawSn);
-                        if (!empty($sn)) {
+                        if (! empty($sn)) {
                             ProductSerial::updateOrCreate(
                                 [
                                     'product_id' => $product->id,
@@ -106,7 +101,7 @@ class InboundStockAction
                                 ],
                                 [
                                     'status' => SerialStatus::AVAILABLE,
-                                    'notes' => 'Penerimaan masuk via ' . $code,
+                                    'notes' => 'Penerimaan masuk via '.$code,
                                 ]
                             );
                             $snList[] = $sn;
@@ -114,7 +109,7 @@ class InboundStockAction
                     }
                 }
 
-                if (!empty($snList)) {
+                if (! empty($snList)) {
                     $serialsString = implode(', ', $snList);
                 }
 
@@ -143,7 +138,7 @@ class InboundStockAction
                     'reference_table' => 'stock_in_transactions',
                     'reference_id' => $transaction->id,
                     'reference_ticket_no' => $data['po_number'] ?? ($data['vendor_delivery_order_no'] ?? null),
-                    'remarks' => "Barang Masuk Inbound [{$code}] dari " . ($data['supplier_name'] ?? 'Vendor') . ($data['vendor_delivery_order_no'] ? " (SJ: {$data['vendor_delivery_order_no']})" : ''),
+                    'remarks' => "Barang Masuk Inbound [{$code}] dari ".($data['supplier_name'] ?? 'Vendor').($data['vendor_delivery_order_no'] ? " (SJ: {$data['vendor_delivery_order_no']})" : ''),
                 ]);
 
                 $totalItems += 1;
@@ -162,8 +157,9 @@ class InboundStockAction
 
     protected function generateTransactionCode(Carbon $date): string
     {
-        $prefix = 'IN-' . $date->format('Ym') . '-';
+        $prefix = 'IN-'.$date->format('Ym').'-';
         $last = StockInTransaction::where('transaction_code', 'like', "{$prefix}%")
+            ->lockForUpdate()
             ->orderBy('id', 'desc')
             ->first();
 
@@ -172,6 +168,6 @@ class InboundStockAction
             $number = intval($matches[1]) + 1;
         }
 
-        return $prefix . str_pad((string) $number, 4, '0', STR_PAD_LEFT);
+        return $prefix.str_pad((string) $number, 4, '0', STR_PAD_LEFT);
     }
 }

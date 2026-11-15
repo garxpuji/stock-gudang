@@ -21,20 +21,17 @@ class OutboundStockAction
     /**
      * Dispatch goods to Field Technicians or Internal Employees
      *
-     * @param array $data
-     * @param int $userId
-     * @return StockOutTransaction
      * @throws InsufficientStockException
      * @throws InvalidSerialException
      */
     public function execute(array $data, int $userId): StockOutTransaction
     {
         return DB::transaction(function () use ($data, $userId) {
-            $date = !empty($data['transaction_date']) ? Carbon::parse($data['transaction_date']) : Carbon::now();
+            $date = ! empty($data['transaction_date']) ? Carbon::parse($data['transaction_date']) : Carbon::now();
             $code = $this->generateTransactionCode($date);
 
-            $recipientType = is_string($data['recipient_type']) 
-                ? RecipientType::from($data['recipient_type']) 
+            $recipientType = is_string($data['recipient_type'])
+                ? RecipientType::from($data['recipient_type'])
                 : $data['recipient_type'];
 
             // 1. Create Transaction Header
@@ -80,9 +77,13 @@ class OutboundStockAction
                 $newStock = $previousStock - $qty;
 
                 // Serial Number Validation & Allocation
-                $serialIds = $item['serial_ids'] ?? [];
+                $serialIds = array_values(array_unique(array_filter($item['serial_ids'] ?? [])));
                 if ($product->has_serial_number) {
                     if (count($serialIds) > 0) {
+                        if (count($serialIds) !== (int) $qty) {
+                            throw new InvalidSerialException('Jumlah Serial Number yang dipilih ('.count($serialIds).") harus sesuai dengan kuantitas keluar ({$qty}) untuk produk '{$product->name}'.");
+                        }
+
                         $serials = ProductSerial::whereIn('id', $serialIds)
                             ->where('product_id', $product->id)
                             ->lockForUpdate()
@@ -113,11 +114,11 @@ class OutboundStockAction
                 ]);
 
                 // Update Serial Numbers status to ISSUED
-                if (!empty($serialIds)) {
+                if (! empty($serialIds)) {
                     foreach ($serialIds as $serialId) {
                         ProductSerial::where('id', $serialId)->update([
                             'status' => SerialStatus::ISSUED,
-                            'last_recipient' => $data['picked_up_by'] . " ({$data['recipient_department_or_team']})",
+                            'last_recipient' => $data['picked_up_by']." ({$data['recipient_department_or_team']})",
                             'last_ticket_no' => $data['reference_ticket_no'] ?? null,
                         ]);
 
@@ -138,11 +139,11 @@ class OutboundStockAction
                     'previous_damaged_stock' => (float) $product->damaged_stock,
                     'current_damaged_stock' => (float) $product->damaged_stock,
                     'system_operator_id' => $userId,
-                    'person_in_charge' => $data['picked_up_by'] . " ({$data['recipient_department_or_team']})",
+                    'person_in_charge' => $data['picked_up_by']." ({$data['recipient_department_or_team']})",
                     'reference_table' => 'stock_out_transactions',
                     'reference_id' => $transaction->id,
                     'reference_ticket_no' => $data['reference_ticket_no'] ?? null,
-                    'remarks' => "Pengeluaran Barang [{$code}] untuk {$data['picked_up_by']} - Keperluan: {$data['purpose']}" . ($data['reference_ticket_no'] ? " (Ref: {$data['reference_ticket_no']})" : ''),
+                    'remarks' => "Pengeluaran Barang [{$code}] untuk {$data['picked_up_by']} - Keperluan: {$data['purpose']}".($data['reference_ticket_no'] ? " (Ref: {$data['reference_ticket_no']})" : ''),
                 ]);
             }
 
@@ -152,8 +153,9 @@ class OutboundStockAction
 
     protected function generateTransactionCode(Carbon $date): string
     {
-        $prefix = 'OUT-' . $date->format('Ym') . '-';
+        $prefix = 'OUT-'.$date->format('Ym').'-';
         $last = StockOutTransaction::where('transaction_code', 'like', "{$prefix}%")
+            ->lockForUpdate()
             ->orderBy('id', 'desc')
             ->first();
 
@@ -162,6 +164,6 @@ class OutboundStockAction
             $number = intval($matches[1]) + 1;
         }
 
-        return $prefix . str_pad((string) $number, 4, '0', STR_PAD_LEFT);
+        return $prefix.str_pad((string) $number, 4, '0', STR_PAD_LEFT);
     }
 }
