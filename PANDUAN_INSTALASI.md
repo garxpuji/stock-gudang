@@ -3,6 +3,9 @@
 
 Dokumen ini merupakan panduan lengkap langkah demi langkah (*step-by-step*) untuk menginstalasi, mengonfigurasi, dan menjalankan aplikasi **Sistem Informasi Inventaris & Logistik Gudang ISP** di lingkungan lokal maupun server produksi.
 
+> [!TIP]
+> Untuk panduan khusus deployment produksi pada Virtual Machine (VM) **Debian 13 (Trixie)** dan **Ubuntu 26 (26.04 LTS)** menggunakan Nginx, PHP 8.4-FPM, MariaDB, Systemd Queue Worker, Cron, dan SSL Certbot, silakan buka: 👉 **[DEPLOYMENT_LINUX.md](DEPLOYMENT_LINUX.md)**.
+
 ---
 
 ## 1. Prasyarat Sistem (Prerequisites)

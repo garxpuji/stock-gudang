@@ -45,12 +45,12 @@ Aplikasi manajemen pergudangan dan logistik telekomunikasi internet service prov
 
 ---
 
-## 🚀 Panduan Instalasi Cepat
+## 🚀 Panduan Instalasi & Deployment
 
-Panduan instalasi lengkap dan mendalam tersedia di:
-👉 **[PANDUAN_INSTALASI.md](PANDUAN_INSTALASI.md)**
+- 💻 **Instalasi Lokal / Development**: 👉 **[PANDUAN_INSTALASI.md](PANDUAN_INSTALASI.md)**
+- 🐧 **Deployment VM Produksi (Debian 13 & Ubuntu 26)**: 👉 **[DEPLOYMENT_LINUX.md](DEPLOYMENT_LINUX.md)** (Nginx, PHP 8.4-FPM, MariaDB, Systemd, SSL)
 
-### Ringkasan Perintah:
+### Ringkasan Perintah Lokal:
 
 ```bash
 # 1. Clone repositori
