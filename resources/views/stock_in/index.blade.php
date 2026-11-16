@@ -100,11 +100,52 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="p-8 text-center text-slate-500">Belum ada data barang masuk.</td>
+                            <td colspan="7" class="p-8 text-center text-slate-600">
+                                Belum ada data barang masuk. Klik tombol <strong>Penerimaan Masuk Baru</strong> untuk mencatat pengadaan.
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
+        </div>
+
+        <!-- Mobile Card-Stack View -->
+        <div class="md:hidden divide-y divide-slate-100">
+            @forelse($transactions as $tx)
+                <div class="p-4 space-y-2">
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <a href="{{ route('stock-in.show', $tx) }}" class="font-mono text-xs font-bold text-emerald-700 hover:underline">
+                                {{ $tx->transaction_code }}
+                            </a>
+                            <span class="text-xs text-slate-500 block">{{ $tx->transaction_date->format('d/m/Y') }}</span>
+                        </div>
+                        <span class="text-xs font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                            {{ $tx->total_items }} SKU
+                        </span>
+                    </div>
+
+                    <div>
+                        <span class="text-sm font-bold text-slate-900 block">{{ $tx->supplier?->name ?? ($tx->supplier_name ?? 'Vendor') }}</span>
+                        @if($tx->po_number || $tx->vendor_delivery_order_no)
+                            <span class="text-xs text-slate-600 font-mono block mt-0.5">
+                                {{ $tx->po_number ? 'PO: '.$tx->po_number : '' }} {{ $tx->vendor_delivery_order_no ? 'SJ: '.$tx->vendor_delivery_order_no : '' }}
+                            </span>
+                        @endif
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                        <span class="text-xs font-bold text-slate-800">Rp {{ number_format($tx->total_cost, 0, ',', '.') }}</span>
+                        <a href="{{ route('stock-in.show', $tx) }}" class="inline-flex items-center px-3 py-1.5 min-h-[40px] rounded-lg text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200">
+                            Lihat Detail
+                        </a>
+                    </div>
+                </div>
+            @empty
+                <div class="p-6 text-center text-sm text-slate-600">
+                    Belum ada data barang masuk. Klik tombol <strong>Penerimaan Masuk Baru</strong> di atas untuk memulai.
+                </div>
+            @endforelse
         </div>
 
         @if($transactions->hasPages())

@@ -34,7 +34,6 @@ class OutboundStockAction
                 ? RecipientType::from($data['recipient_type'])
                 : $data['recipient_type'];
 
-            // 1. Create Transaction Header
             $transaction = StockOutTransaction::create([
                 'transaction_code' => $code,
                 'recipient_type' => $recipientType,
@@ -54,7 +53,6 @@ class OutboundStockAction
                 ? MutationType::OUTBOUND_TEKNISI
                 : MutationType::OUTBOUND_KARYAWAN;
 
-            // 2. Process Items with Pessimistic Locking
             foreach ($data['items'] as $item) {
                 $qty = (float) $item['qty'];
 
@@ -65,7 +63,6 @@ class OutboundStockAction
 
                 $previousStock = (float) $product->stock;
 
-                // Enforce strictly sufficient stock invariant
                 if ($previousStock < $qty) {
                     throw new InsufficientStockException(
                         $product->name,
@@ -76,7 +73,6 @@ class OutboundStockAction
 
                 $newStock = $previousStock - $qty;
 
-                // Serial Number Validation & Allocation
                 $serialIds = array_values(array_unique(array_filter($item['serial_ids'] ?? [])));
                 if ($product->has_serial_number) {
                     if (count($serialIds) > 0) {
@@ -101,11 +97,9 @@ class OutboundStockAction
                     }
                 }
 
-                // Deduct active stock
                 $product->stock = $newStock;
                 $product->save();
 
-                // Create Stock Out Item
                 $outItem = StockOutItem::create([
                     'stock_out_transaction_id' => $transaction->id,
                     'product_id' => $product->id,
@@ -113,7 +107,6 @@ class OutboundStockAction
                     'notes' => $item['notes'] ?? null,
                 ]);
 
-                // Update Serial Numbers status to ISSUED
                 if (! empty($serialIds)) {
                     foreach ($serialIds as $serialId) {
                         ProductSerial::where('id', $serialId)->update([
@@ -129,7 +122,6 @@ class OutboundStockAction
                     }
                 }
 
-                // Create Immutable Stock Mutation Ledger Record
                 StockMutation::create([
                     'product_id' => $product->id,
                     'mutation_type' => $mutationType,

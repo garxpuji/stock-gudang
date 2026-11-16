@@ -32,7 +32,6 @@ class ProcessReturnAction
                 ? (is_string($data['recipient_type']) ? RecipientType::from($data['recipient_type']) : $data['recipient_type'])
                 : RecipientType::TEKNISI;
 
-            // 1. Create Return Transaction Header
             $transaction = ReturnTransaction::create([
                 'transaction_code' => $code,
                 'returned_by' => trim($data['returned_by']),
@@ -47,7 +46,6 @@ class ProcessReturnAction
                 'total_items' => count($data['items']),
             ]);
 
-            // 2. Process Items with QC Inspection Branching
             foreach ($data['items'] as $item) {
                 $qty = (float) $item['qty'];
                 $qcStatus = is_string($item['qc_status'])
@@ -66,14 +64,13 @@ class ProcessReturnAction
                 $mac = ! empty($item['mac_address']) ? trim($item['mac_address']) : null;
 
                 if ($qcStatus === QcStatus::GOOD) {
-                    // QC Status: BAIK / LAYAK PAKAI -> RESTOCK KE STOK AKTIF
+                    // Restock item to active inventory when QC passes.
                     $newStock = $previousStock + $qty;
                     $product->stock = $newStock;
                     $product->save();
 
                     $actionTaken = 'RESTOCKED';
 
-                    // Update serial if active device
                     if ($sn) {
                         ProductSerial::updateOrCreate(
                             [
@@ -89,7 +86,6 @@ class ProcessReturnAction
                         );
                     }
 
-                    // Create Return Item
                     $returnItem = ReturnTransactionItem::create([
                         'return_transaction_id' => $transaction->id,
                         'product_id' => $product->id,
@@ -101,7 +97,6 @@ class ProcessReturnAction
                         'action_taken' => $actionTaken,
                     ]);
 
-                    // Ledger: RETURN_GOOD
                     StockMutation::create([
                         'product_id' => $product->id,
                         'mutation_type' => MutationType::RETURN_GOOD,
@@ -117,16 +112,14 @@ class ProcessReturnAction
                         'reference_ticket_no' => $data['reference_ticket_no'] ?? null,
                         'remarks' => "Retur Barang Kondisi BAIK [{$code}] dari {$data['returned_by']} (Lolos QC, siap dialokasikan kembali)",
                     ]);
-
                 } else {
-                    // QC Status: RUSAK / CACAT -> MASUK KARANTINA (STOK AKTIF TIDAK BERTAMBAH!)
+                    // Quarantine damaged item without increasing active stock.
                     $newDamagedStock = $previousDamagedStock + $qty;
                     $product->damaged_stock = $newDamagedStock;
                     $product->save();
 
                     $actionTaken = 'QUARANTINED_DAMAGED';
 
-                    // Update serial to DAMAGED
                     if ($sn) {
                         ProductSerial::updateOrCreate(
                             [
@@ -141,7 +134,6 @@ class ProcessReturnAction
                         );
                     }
 
-                    // Create Return Item
                     $returnItem = ReturnTransactionItem::create([
                         'return_transaction_id' => $transaction->id,
                         'product_id' => $product->id,
@@ -153,7 +145,6 @@ class ProcessReturnAction
                         'action_taken' => $actionTaken,
                     ]);
 
-                    // Route directly to damaged_goods table
                     $damageCategory = ! empty($item['damage_category'])
                         ? (is_string($item['damage_category']) ? DamageCategory::from($item['damage_category']) : $item['damage_category'])
                         : DamageCategory::PHYSICAL_DEFECT;
@@ -177,15 +168,14 @@ class ProcessReturnAction
                         'action_taken' => DamagedActionTaken::PENDING,
                     ]);
 
-                    // Ledger: RETURN_DAMAGED
                     StockMutation::create([
                         'product_id' => $product->id,
                         'mutation_type' => MutationType::RETURN_DAMAGED,
                         'qty' => $qty,
                         'previous_stock' => $previousStock,
-                        'current_stock' => $previousStock, // Tetap sama, tidak ada penambahan stok aktif!
+                        'current_stock' => $previousStock,
                         'previous_damaged_stock' => $previousDamagedStock,
-                        'current_damaged_stock' => $newDamagedStock, // Saldo rusak karantina bertambah
+                        'current_damaged_stock' => $newDamagedStock,
                         'system_operator_id' => $userId,
                         'person_in_charge' => $data['returned_by'],
                         'reference_table' => 'return_transactions',
@@ -202,7 +192,7 @@ class ProcessReturnAction
 
     protected function generateTransactionCode(Carbon $date): string
     {
-        $prefix = 'RET-'.$date->format('Ym').'-';
+        $prefix = 'RET-' . $date->format('Ym') . '-';
         $last = ReturnTransaction::where('transaction_code', 'like', "{$prefix}%")
             ->lockForUpdate()
             ->orderBy('id', 'desc')
@@ -213,12 +203,12 @@ class ProcessReturnAction
             $number = intval($matches[1]) + 1;
         }
 
-        return $prefix.str_pad((string) $number, 4, '0', STR_PAD_LEFT);
+        return $prefix . str_pad((string) $number, 4, '0', STR_PAD_LEFT);
     }
 
     protected function generateDamagedCode(Carbon $date): string
     {
-        $prefix = 'DMG-'.$date->format('Ym').'-';
+        $prefix = 'DMG-' . $date->format('Ym') . '-';
         $last = DamagedGood::where('code', 'like', "{$prefix}%")
             ->lockForUpdate()
             ->orderBy('id', 'desc')
@@ -229,6 +219,6 @@ class ProcessReturnAction
             $number = intval($matches[1]) + 1;
         }
 
-        return $prefix.str_pad((string) $number, 4, '0', STR_PAD_LEFT);
+        return $prefix . str_pad((string) $number, 4, '0', STR_PAD_LEFT);
     }
 }

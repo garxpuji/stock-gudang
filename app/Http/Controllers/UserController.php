@@ -23,7 +23,6 @@ class UserController extends Controller
 
         $query = User::query();
 
-        // Search
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
@@ -33,12 +32,10 @@ class UserController extends Controller
             });
         }
 
-        // Filter Role
         if ($request->filled('role')) {
             $query->where('role', $request->input('role'));
         }
 
-        // Filter Status
         if ($request->filled('status')) {
             $status = $request->input('status') === 'active';
             $query->where('is_active', $status);

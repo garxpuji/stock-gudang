@@ -26,7 +26,6 @@ class InboundStockAction
             $totalItems = 0;
             $totalCost = 0.00;
 
-            // 1. Create Transaction Header
             $transaction = StockInTransaction::create([
                 'transaction_code' => $code,
                 'supplier_id' => $data['supplier_id'] ?? null,
@@ -41,7 +40,6 @@ class InboundStockAction
                 'total_cost' => 0.00,
             ]);
 
-            // 2. Process Items with Pessimistic Locking
             foreach ($data['items'] as $item) {
                 $qty = (float) $item['qty'];
                 $costPrice = isset($item['cost_price']) ? (float) $item['cost_price'] : 0.00;
@@ -55,14 +53,12 @@ class InboundStockAction
                 $previousStock = (float) $product->stock;
                 $newStock = $previousStock + $qty;
 
-                // Update product stock balance & cost price
                 $product->stock = $newStock;
                 if ($costPrice > 0) {
                     $product->cost_price = $costPrice;
                 }
                 $product->save();
 
-                // Process Serial Numbers / MAC addresses if applicable
                 $serialsString = null;
                 $snList = [];
 
@@ -80,7 +76,7 @@ class InboundStockAction
                                 [
                                     'mac_address' => ! empty($mac) ? $mac : null,
                                     'status' => SerialStatus::AVAILABLE,
-                                    'notes' => 'Penerimaan masuk via '.$code,
+                                    'notes' => 'Penerimaan masuk via ' . $code,
                                 ]
                             );
                             $snList[] = $sn;
@@ -101,7 +97,7 @@ class InboundStockAction
                                 ],
                                 [
                                     'status' => SerialStatus::AVAILABLE,
-                                    'notes' => 'Penerimaan masuk via '.$code,
+                                    'notes' => 'Penerimaan masuk via ' . $code,
                                 ]
                             );
                             $snList[] = $sn;
@@ -113,7 +109,6 @@ class InboundStockAction
                     $serialsString = implode(', ', $snList);
                 }
 
-                // Create Transaction Item
                 StockInItem::create([
                     'stock_in_transaction_id' => $transaction->id,
                     'product_id' => $product->id,
@@ -124,7 +119,6 @@ class InboundStockAction
                     'notes' => $item['notes'] ?? null,
                 ]);
 
-                // Create Immutable Stock Mutation Ledger Record
                 StockMutation::create([
                     'product_id' => $product->id,
                     'mutation_type' => MutationType::INBOUND,
@@ -138,14 +132,13 @@ class InboundStockAction
                     'reference_table' => 'stock_in_transactions',
                     'reference_id' => $transaction->id,
                     'reference_ticket_no' => $data['po_number'] ?? ($data['vendor_delivery_order_no'] ?? null),
-                    'remarks' => "Barang Masuk Inbound [{$code}] dari ".($data['supplier_name'] ?? 'Vendor').($data['vendor_delivery_order_no'] ? " (SJ: {$data['vendor_delivery_order_no']})" : ''),
+                    'remarks' => "Barang Masuk Inbound [{$code}] dari " . ($data['supplier_name'] ?? 'Vendor') . ($data['vendor_delivery_order_no'] ? " (SJ: {$data['vendor_delivery_order_no']})" : ''),
                 ]);
 
                 $totalItems += 1;
                 $totalCost += $subtotal;
             }
 
-            // Update header totals
             $transaction->update([
                 'total_items' => $totalItems,
                 'total_cost' => $totalCost,
@@ -157,7 +150,7 @@ class InboundStockAction
 
     protected function generateTransactionCode(Carbon $date): string
     {
-        $prefix = 'IN-'.$date->format('Ym').'-';
+        $prefix = 'IN-' . $date->format('Ym') . '-';
         $last = StockInTransaction::where('transaction_code', 'like', "{$prefix}%")
             ->lockForUpdate()
             ->orderBy('id', 'desc')
@@ -168,6 +161,6 @@ class InboundStockAction
             $number = intval($matches[1]) + 1;
         }
 
-        return $prefix.str_pad((string) $number, 4, '0', STR_PAD_LEFT);
+        return $prefix . str_pad((string) $number, 4, '0', STR_PAD_LEFT);
     }
 }

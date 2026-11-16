@@ -19,9 +19,13 @@
             <!-- Dropdown Export Excel & PDF -->
             <div class="relative" x-data="{ exportMenu: false }">
                 <button type="button" @click="exportMenu = !exportMenu" @click.outside="exportMenu = false" class="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-300 font-semibold text-sm shadow-2xs transition-colors cursor-pointer min-h-[44px]">
-                    <svg class="w-4 h-4 text-orange-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <svg class="w-4 h-4 text-orange-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
                     <span>Export Laporan</span>
-                    <svg class="w-3.5 h-3.5 text-orange-700 transition-transform" :class="exportMenu ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    <svg class="w-3.5 h-3.5 text-orange-700 transition-transform" :class="exportMenu ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
                 </button>
                 <div x-show="exportMenu" x-cloak x-transition class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-slate-200 py-1.5 z-30 divide-y divide-slate-100">
                     <div class="px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">Pilih Format File</div>
@@ -39,7 +43,9 @@
             </div>
 
             <a href="{{ route('damaged-goods.create') }}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white font-semibold text-sm shadow-xs transition-colors cursor-pointer min-h-[44px]">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
                 <span>Lapor Kerusakan Langsung</span>
             </a>
         </div>
@@ -78,7 +84,9 @@
             <div class="lg:col-span-2 relative">
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari Kode Rusak / SN / Nama Perangkat / Pelapor..." class="w-full pl-10 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
                 </div>
             </div>
 
@@ -110,7 +118,7 @@
 
     <!-- TABEL BARANG RUSAK -->
     <div class="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
-        
+
         <div class="hidden md:block overflow-x-auto">
             <table class="w-full text-left text-sm text-slate-600">
                 <thead class="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
@@ -125,63 +133,105 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse($damagedGoods as $dmg)
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="py-4 px-6">
-                                <a href="{{ route('damaged-goods.show', $dmg) }}" class="font-mono font-bold text-orange-700 hover:underline block">
-                                    {{ $dmg->code }}
-                                </a>
-                                <span class="text-xs text-slate-400 block mt-0.5">{{ $dmg->reported_at->format('d/m/Y H:i') }}</span>
-                            </td>
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-4 px-6">
+                            <a href="{{ route('damaged-goods.show', $dmg) }}" class="font-mono font-bold text-orange-700 hover:underline block">
+                                {{ $dmg->code }}
+                            </a>
+                            <span class="text-xs text-slate-400 block mt-0.5">{{ $dmg->reported_at->format('d/m/Y H:i') }}</span>
+                        </td>
 
-                            <td class="py-4 px-4">
-                                <span class="font-bold text-slate-900 block">{{ $dmg->product->name }}</span>
-                                <div class="flex items-center gap-2 mt-0.5">
-                                    <span class="font-mono text-xs text-slate-500">{{ $dmg->product->sku }}</span>
-                                    @if($dmg->serial_number)
-                                        <span>&bull;</span>
-                                        <span class="font-mono text-xs font-bold text-slate-800">SN: {{ $dmg->serial_number }}</span>
-                                    @endif
-                                </div>
-                            </td>
+                        <td class="py-4 px-4">
+                            <span class="font-bold text-slate-900 block">{{ $dmg->product->name }}</span>
+                            <div class="flex items-center gap-2 mt-0.5">
+                                <span class="font-mono text-xs text-slate-500">{{ $dmg->product->sku }}</span>
+                                @if($dmg->serial_number)
+                                <span>&bull;</span>
+                                <span class="font-mono text-xs font-bold text-slate-800">SN: {{ $dmg->serial_number }}</span>
+                                @endif
+                            </div>
+                        </td>
 
-                            <td class="py-4 px-4">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold border {{ $dmg->damage_category->color() }}">
-                                    {{ $dmg->damage_category->value }}
-                                </span>
-                                <p class="text-xs text-slate-500 mt-1 line-clamp-1 italic" title="{{ $dmg->damage_description }}">"{{ $dmg->damage_description }}"</p>
-                            </td>
+                        <td class="py-4 px-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold border {{ $dmg->damage_category->color() }}">
+                                {{ $dmg->damage_category->value }}
+                            </span>
+                            <p class="text-xs text-slate-500 mt-1 line-clamp-1 italic" title="{{ $dmg->damage_description }}">"{{ $dmg->damage_description }}"</p>
+                        </td>
 
-                            <td class="py-4 px-4 text-xs">
-                                <span class="font-bold text-slate-800 block">{{ $dmg->reported_by }}</span>
-                                <span class="text-slate-400 block mt-0.5">Sumber: {{ $dmg->source }}</span>
-                            </td>
+                        <td class="py-4 px-4 text-xs">
+                            <span class="font-bold text-slate-800 block">{{ $dmg->reported_by }}</span>
+                            <span class="text-slate-400 block mt-0.5">Sumber: {{ $dmg->source }}</span>
+                        </td>
 
-                            <td class="py-4 px-4 text-center">
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border {{ $dmg->action_taken->badge() }}">
-                                    {{ $dmg->action_taken->label() }}
-                                </span>
-                            </td>
+                        <td class="py-4 px-4 text-center">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border {{ $dmg->action_taken->badge() }}">
+                                {{ $dmg->action_taken->label() }}
+                            </span>
+                        </td>
 
-                            <td class="py-4 px-6 text-right">
-                                <a href="{{ route('damaged-goods.show', $dmg) }}" class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
-                                    <span>Tindakan</span>
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                                </a>
-                            </td>
-                        </tr>
+                        <td class="py-4 px-6 text-right">
+                            <a href="{{ route('damaged-goods.show', $dmg) }}" class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
+                                <span>Tindakan</span>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
                     @empty
-                        <tr>
-                            <td colspan="6" class="p-8 text-center text-slate-500">Tidak ada barang rusak terdata pada filter ini.</td>
-                        </tr>
+                    <tr>
+                        <td colspan="6" class="p-8 text-center text-slate-600">
+                            Tidak ada barang rusak pada filter ini. Gunakan tombol <strong>Lapor Kerusakan Langsung</strong> jika menemukan unit cacat.
+                        </td>
+                    </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
 
-        @if($damagedGoods->hasPages())
-            <div class="p-4 px-6 border-t border-slate-200 bg-slate-50/50">
-                {{ $damagedGoods->links() }}
+        <!-- Mobile Card-Stack View -->
+        <div class="md:hidden divide-y divide-slate-100">
+            @forelse($damagedGoods as $dmg)
+            <div class="p-4 space-y-2">
+                <div class="flex items-start justify-between gap-2">
+                    <div>
+                        <a href="{{ route('damaged-goods.show', $dmg) }}" class="font-mono text-xs font-bold text-orange-700 hover:underline">
+                            {{ $dmg->code }}
+                        </a>
+                        <span class="text-xs text-slate-500 block">{{ $dmg->reported_at->format('d/m/Y H:i') }}</span>
+                    </div>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold border {{ $dmg->action_taken->badge() }}">
+                        {{ $dmg->action_taken->label() }}
+                    </span>
+                </div>
+
+                <div>
+                    <span class="text-sm font-bold text-slate-900 block">{{ $dmg->product->name }}</span>
+                    <span class="text-xs text-slate-600 font-mono block">{{ $dmg->product->sku }} {{ $dmg->serial_number ? '• SN: '.$dmg->serial_number : '' }}</span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold border mt-1 {{ $dmg->damage_category->color() }}">
+                        {{ $dmg->damage_category->value }}
+                    </span>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                    <span class="text-xs text-slate-600">Pelapor: {{ $dmg->reported_by }}</span>
+                    <a href="{{ route('damaged-goods.show', $dmg) }}" class="inline-flex items-center px-3 py-1.5 min-h-[40px] rounded-lg text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200">
+                        Tindak Lanjut
+                    </a>
+                </div>
             </div>
+            @empty
+            <div class="p-6 text-center text-sm text-slate-600">
+                Tidak ada barang rusak pada filter ini.
+            </div>
+            @endforelse
+        </div>
+
+        @if($damagedGoods->hasPages())
+        <div class="p-4 px-6 border-t border-slate-200 bg-slate-50/50">
+            {{ $damagedGoods->links() }}
+        </div>
         @endif
 
     </div>
