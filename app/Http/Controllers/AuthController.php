@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class AuthController extends Controller
@@ -33,9 +34,20 @@ class AuthController extends Controller
         ], $request->boolean('remember'))) {
             $request->session()->regenerate();
 
+            Log::info('security.login_succeeded', [
+                'user_id' => Auth::id(),
+                'email' => $credentials['email'],
+                'ip' => $request->ip(),
+            ]);
+
             return redirect()->intended(route('dashboard'))
                 ->with('success', 'Selamat datang di Sistem Logistik & Inventaris Gudang Gayuh Media Informatika.');
         }
+
+        Log::warning('security.login_failed', [
+            'email' => $credentials['email'],
+            'ip' => $request->ip(),
+        ]);
 
         return back()->withErrors([
             'email' => 'Email atau kata sandi tidak cocok, atau akun petugas gudang sedang dinonaktifkan.',
@@ -57,6 +69,12 @@ class AuthController extends Controller
             Auth::login($user);
             $request->session()->regenerate();
 
+            Log::info('security.quick_login', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'ip' => $request->ip(),
+            ]);
+
             return redirect()->route('dashboard')->with('success', "Masuk sebagai {$user->name} ({$user->role})");
         }
 
@@ -65,9 +83,16 @@ class AuthController extends Controller
 
     public function logout(Request $request): RedirectResponse
     {
+        $userId = Auth::id();
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        Log::info('security.logout', [
+            'user_id' => $userId,
+            'ip' => $request->ip(),
+        ]);
 
         return redirect()->route('login')->with('info', 'Anda telah keluar dari sistem gudang.');
     }

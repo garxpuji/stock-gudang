@@ -68,6 +68,7 @@
         <span>Kartu Stok</span>
     </a>
 
+    @if(Auth::user()?->isAdminGudang())
     <!-- Stok Opname -->
     <a href="{{ route('opname.index') }}" class="flex items-center gap-3 px-3 py-2.5 min-h-[44px] rounded-xl text-sm font-medium transition-colors focus:outline-hidden focus:ring-2 focus:ring-emerald-500 {{ request()->routeIs('opname.*') ? 'bg-emerald-50 text-emerald-900 font-semibold border border-emerald-200' : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100' }}">
         <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('opname.*') ? 'text-emerald-600' : 'text-slate-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,8 +84,9 @@
         </svg>
         <span class="flex-1">Master Data</span>
     </a>
+    @endif
 
-    @if(Auth::user()?->isAdminGudang())
+    @if(Auth::user()?->isSuperAdmin())
     <!-- Kelola Pengguna -->
     <a href="{{ route('users.index') }}" class="flex items-center gap-3 px-3 py-2.5 min-h-[44px] rounded-xl text-sm font-medium transition-colors focus:outline-hidden focus:ring-2 focus:ring-emerald-500 {{ request()->routeIs('users.*') ? 'bg-emerald-50 text-emerald-900 font-semibold border border-emerald-200' : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100' }}">
         <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('users.*') ? 'text-emerald-600' : 'text-slate-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">

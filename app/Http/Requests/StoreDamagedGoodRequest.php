@@ -25,7 +25,7 @@ class StoreDamagedGoodRequest extends FormRequest
             'damage_description' => 'required|string',
             'serial_number' => 'nullable|string|max:100',
             'mac_address' => 'nullable|string|max:50',
-            'photo_proof' => 'nullable|image|max:5120',
+            'photo_proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'deduct_from_active_stock' => 'nullable|boolean',
             'reference_ticket_no' => 'nullable|string|max:100',
             'reported_at' => 'nullable|date',

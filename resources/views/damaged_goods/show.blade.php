@@ -71,7 +71,7 @@
             <div>
                 <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Foto Bukti Fisik Kerusakan</h3>
                 <div class="rounded-xl overflow-hidden border border-slate-200 max-w-md">
-                    <img src="{{ asset('storage/' . $damagedGood->photo_proof) }}" alt="Bukti Kerusakan" class="w-full object-cover">
+                    <img src="{{ route('damaged-goods.photo', $damagedGood) }}" alt="Bukti Kerusakan" class="w-full object-cover">
                 </div>
             </div>
         @endif
@@ -105,7 +105,7 @@
     </div>
 
     <!-- FORM TINDAKAN LANJUTAN JIKA MASIH PENDING -->
-    @if($damagedGood->action_taken === \App\Enums\DamagedActionTaken::PENDING)
+    @if($damagedGood->action_taken === \App\Enums\DamagedActionTaken::PENDING && Auth::user()?->isAdminGudang())
         <div class="bg-white rounded-2xl border-2 border-emerald-500/40 shadow-xs p-6 md:p-8 space-y-6" x-data="{ selectedAction: 'RMA_VENDOR' }">
             <div class="border-b border-slate-100 pb-3">
                 <h2 class="text-base font-bold text-slate-900">Eksekusi Tindakan Lanjutan (Karantina)</h2>

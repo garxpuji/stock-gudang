@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Unit;
+use App\Support\SqlLike;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -15,10 +16,10 @@ class UnitController extends Controller
         $query = Unit::withCount('products');
 
         if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('abbreviation', 'like', "%{$search}%");
+            $like = SqlLike::contains((string) $request->input('search'));
+            $query->where(function ($q) use ($like) {
+                $q->where('name', 'like', $like)
+                    ->orWhere('abbreviation', 'like', $like);
             });
         }
 
@@ -41,15 +42,7 @@ class UnitController extends Controller
 
         $unit = Unit::create($validated);
 
-        if ($request->filled('redirect_to')) {
-            $redirectTo = (string) $request->input('redirect_to');
-            if ((str_starts_with($redirectTo, '/') && ! str_starts_with($redirectTo, '//')) || str_starts_with($redirectTo, url('/'))) {
-                return redirect($redirectTo)
-                    ->with('success', "Satuan '{$unit->name} ({$unit->abbreviation})' berhasil ditambahkan.");
-            }
-        }
-
-        return redirect()->route('units.index')
+        return redirect($this->resolveSafeRedirect($request->input('redirect_to'), 'units.index'))
             ->with('success', "Satuan '{$unit->name} ({$unit->abbreviation})' berhasil ditambahkan.");
     }
 

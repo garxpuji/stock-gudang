@@ -8,9 +8,11 @@ use App\Http\Requests\StoreReturnRequest;
 use App\Models\Product;
 use App\Models\ReturnTransaction;
 use App\Models\StockOutTransaction;
+use App\Support\SqlLike;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ReturnController extends Controller
@@ -20,12 +22,12 @@ class ReturnController extends Controller
         $query = ReturnTransaction::with(['receivedBy', 'items.product.unit']);
 
         if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('transaction_code', 'like', "%{$search}%")
-                    ->orWhere('returned_by', 'like', "%{$search}%")
-                    ->orWhere('reference_ticket_no', 'like', "%{$search}%")
-                    ->orWhere('return_category', 'like', "%{$search}%");
+            $like = SqlLike::contains((string) $request->input('search'));
+            $query->where(function ($q) use ($like) {
+                $q->where('transaction_code', 'like', $like)
+                    ->orWhere('returned_by', 'like', $like)
+                    ->orWhere('reference_ticket_no', 'like', $like)
+                    ->orWhere('return_category', 'like', $like);
             });
         }
 
@@ -76,7 +78,10 @@ class ReturnController extends Controller
 
     public function store(StoreReturnRequest $request, ProcessReturnAction $action): RedirectResponse
     {
-        $userId = Auth::id() ?? 1;
+        $userId = Auth::id();
+        abort_if($userId === null, 401);
+
+        $storedFiles = [];
 
         try {
             $data = $request->validated();
@@ -84,20 +89,28 @@ class ReturnController extends Controller
             // Handle optional photo proof upload per item if provided
             foreach ($data['items'] as $idx => $item) {
                 if ($request->hasFile("items.{$idx}.photo_proof")) {
-                    $data['items'][$idx]['photo_proof'] = $request->file("items.{$idx}.photo_proof")->store('damaged_proofs', 'public');
+                    $path = $request->file("items.{$idx}.photo_proof")->store('damaged_proofs', 'local');
+                    $storedFiles[] = $path;
+                    $data['items'][$idx]['photo_proof'] = $path;
                 }
             }
 
             if ($request->hasFile('photo_proof') && empty($data['items'][0]['photo_proof'])) {
-                $data['items'][0]['photo_proof'] = $request->file('photo_proof')->store('damaged_proofs', 'public');
+                $path = $request->file('photo_proof')->store('damaged_proofs', 'local');
+                $storedFiles[] = $path;
+                $data['items'][0]['photo_proof'] = $path;
             }
 
             $transaction = $action->execute($data, $userId);
 
             return redirect()->route('returns.show', $transaction)
                 ->with('success', "Penerimaan retur barang [{$transaction->transaction_code}] dengan inspeksi QC berhasil disimpan.");
-        } catch (\Exception $e) {
-            return back()->withInput()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            if ($storedFiles !== []) {
+                Storage::disk('local')->delete($storedFiles);
+            }
+
+            return $this->handleTransactionException($e, 'returns.store_failed');
         }
     }
 

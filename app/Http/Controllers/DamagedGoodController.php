@@ -9,10 +9,13 @@ use App\Http\Requests\ResolveDamagedGoodRequest;
 use App\Http\Requests\StoreDamagedGoodRequest;
 use App\Models\DamagedGood;
 use App\Models\Product;
+use App\Support\SqlLike;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DamagedGoodController extends Controller
 {
@@ -21,15 +24,15 @@ class DamagedGoodController extends Controller
         $query = DamagedGood::with(['product.unit', 'resolvedBy']);
 
         if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('code', 'like', "%{$search}%")
-                    ->orWhere('serial_number', 'like', "%{$search}%")
-                    ->orWhere('reported_by', 'like', "%{$search}%")
-                    ->orWhere('damage_description', 'like', "%{$search}%")
-                    ->orWhereHas('product', function ($pq) use ($search) {
-                        $pq->where('name', 'like', "%{$search}%")
-                            ->orWhere('sku', 'like', "%{$search}%");
+            $like = SqlLike::contains((string) $request->input('search'));
+            $query->where(function ($q) use ($like) {
+                $q->where('code', 'like', $like)
+                    ->orWhere('serial_number', 'like', $like)
+                    ->orWhere('reported_by', 'like', $like)
+                    ->orWhere('damage_description', 'like', $like)
+                    ->orWhereHas('product', function ($pq) use ($like) {
+                        $pq->where('name', 'like', $like)
+                            ->orWhere('sku', 'like', $like);
                     });
             });
         }
@@ -73,21 +76,29 @@ class DamagedGoodController extends Controller
 
     public function store(StoreDamagedGoodRequest $request, RecordDamagedGoodsAction $action): RedirectResponse
     {
-        $userId = Auth::id() ?? 1;
+        $userId = Auth::id();
+        abort_if($userId === null, 401);
+
+        $storedPath = null;
 
         try {
             $data = $request->validated();
 
             if ($request->hasFile('photo_proof')) {
-                $data['photo_proof'] = $request->file('photo_proof')->store('damaged_proofs', 'public');
+                $storedPath = $request->file('photo_proof')->store('damaged_proofs', 'local');
+                $data['photo_proof'] = $storedPath;
             }
 
             $damagedGood = $action->execute($data, $userId);
 
             return redirect()->route('damaged-goods.show', $damagedGood)
                 ->with('success', "Barang rusak [{$damagedGood->code}] berhasil dicatat dan masuk ke Area Karantina.");
-        } catch (\Exception $e) {
-            return back()->withInput()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            if ($storedPath !== null) {
+                Storage::disk('local')->delete($storedPath);
+            }
+
+            return $this->handleTransactionException($e, 'damaged_goods.store_failed');
         }
     }
 
@@ -98,9 +109,36 @@ class DamagedGoodController extends Controller
         return view('damaged_goods.show', compact('damagedGood'));
     }
 
+    public function photo(DamagedGood $damagedGood): StreamedResponse
+    {
+        $path = $damagedGood->photo_proof;
+
+        abort_if(
+            ! is_string($path)
+            || $path === ''
+            || str_contains($path, '..')
+            || ! str_starts_with($path, 'damaged_proofs/'),
+            404
+        );
+
+        if (Storage::disk('local')->exists($path)) {
+            $disk = 'local';
+        } elseif (Storage::disk('public')->exists($path)) {
+            $disk = 'public';
+        } else {
+            abort(404);
+        }
+
+        return Storage::disk($disk)->response($path, null, [
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control' => 'private, no-store, max-age=0',
+        ]);
+    }
+
     public function resolve(ResolveDamagedGoodRequest $request, DamagedGood $damagedGood, ResolveDamagedGoodsAction $action): RedirectResponse
     {
-        $userId = Auth::id() ?? 1;
+        $userId = Auth::id();
+        abort_if($userId === null, 401);
 
         try {
             $resolved = $action->execute(
@@ -112,8 +150,8 @@ class DamagedGoodController extends Controller
 
             return redirect()->route('damaged-goods.show', $resolved)
                 ->with('success', "Tindakan lanjutan untuk [{$resolved->code}] berhasil diproses: {$resolved->action_taken->label()}.");
-        } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            return $this->handleTransactionException($e, 'damaged_goods.resolve_failed', false);
         }
     }
 }

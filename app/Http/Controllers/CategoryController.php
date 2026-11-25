@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Support\SqlLike;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -15,11 +16,11 @@ class CategoryController extends Controller
         $query = Category::withCount('products');
 
         if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('code', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+            $like = SqlLike::contains((string) $request->input('search'));
+            $query->where(function ($q) use ($like) {
+                $q->where('name', 'like', $like)
+                    ->orWhere('code', 'like', $like)
+                    ->orWhere('description', 'like', $like);
             });
         }
 
@@ -43,15 +44,7 @@ class CategoryController extends Controller
 
         $category = Category::create($validated);
 
-        if ($request->filled('redirect_to')) {
-            $redirectTo = (string) $request->input('redirect_to');
-            if ((str_starts_with($redirectTo, '/') && ! str_starts_with($redirectTo, '//')) || str_starts_with($redirectTo, url('/'))) {
-                return redirect($redirectTo)
-                    ->with('success', "Kategori '{$category->name}' berhasil ditambahkan.");
-            }
-        }
-
-        return redirect()->route('categories.index')
+        return redirect($this->resolveSafeRedirect($request->input('redirect_to'), 'categories.index'))
             ->with('success', "Kategori '{$category->name}' berhasil ditambahkan.");
     }
 

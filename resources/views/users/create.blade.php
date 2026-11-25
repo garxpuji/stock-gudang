@@ -52,13 +52,22 @@
                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
                     Peran / Hak Akses (Role) <span class="text-rose-500">*</span>
                 </label>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <!-- Staff Gudang Card -->
+                    <label class="relative flex items-start p-4 rounded-xl border border-slate-200 hover:border-sky-500 cursor-pointer transition-colors has-checked:border-sky-600 has-checked:bg-sky-50/40">
+                        <input type="radio" name="role" value="staff_gudang" {{ old('role') === 'staff_gudang' ? 'checked' : '' }} class="mt-1 text-sky-600 focus:ring-sky-500">
+                        <div class="ml-3">
+                            <span class="block text-sm font-bold text-slate-900">Staf Gudang</span>
+                            <span class="block text-xs text-slate-500 mt-0.5">Operasional harian barang masuk, barang keluar, retur, dan laporan kerusakan tanpa akses ubah master data atau opname.</span>
+                        </div>
+                    </label>
+
                     <!-- Admin Gudang Card -->
                     <label class="relative flex items-start p-4 rounded-xl border border-slate-200 hover:border-emerald-500 cursor-pointer transition-colors has-checked:border-emerald-600 has-checked:bg-emerald-50/40">
                         <input type="radio" name="role" value="admin_gudang" {{ old('role', 'admin_gudang') === 'admin_gudang' ? 'checked' : '' }} class="mt-1 text-emerald-600 focus:ring-emerald-500">
                         <div class="ml-3">
                             <span class="block text-sm font-bold text-slate-900">Admin Gudang</span>
-                            <span class="block text-xs text-slate-500 mt-0.5">Operasional stok masuk, barang keluar teknisi, retur, QC karantina, dan pencetakan surat jalan.</span>
+                            <span class="block text-xs text-slate-500 mt-0.5">Akses penuh operasional, master data, stok opname, dan resolusi barang rusak (kecuali kelola pengguna).</span>
                         </div>
                     </label>
 
@@ -67,7 +76,7 @@
                         <input type="radio" name="role" value="superadmin" {{ old('role') === 'superadmin' ? 'checked' : '' }} class="mt-1 text-purple-600 focus:ring-purple-500">
                         <div class="ml-3">
                             <span class="block text-sm font-bold text-slate-900">Superadmin</span>
-                            <span class="block text-xs text-slate-500 mt-0.5">Akses penuh seluruh sistem: manajemen user, audit kartu stok, resolusi barang rusak, serta pengaturan global.</span>
+                            <span class="block text-xs text-slate-500 mt-0.5">Akses penuh seluruh sistem termasuk manajemen pengguna, audit stok, dan pengaturan global.</span>
                         </div>
                     </label>
                 </div>
@@ -78,7 +87,7 @@
                 <label for="password" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
                     Kata Sandi (Password) <span class="text-rose-500">*</span>
                 </label>
-                <input type="password" name="password" id="password" placeholder="Minimal 6 karakter..." required class="w-full py-2.5 px-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                <input type="password" name="password" id="password" placeholder="Minimal 10 karakter (huruf & angka)..." required class="w-full py-2.5 px-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
             </div>
 
             <!-- Konfirmasi Password -->
@@ -87,6 +96,14 @@
                     Ulangi Kata Sandi <span class="text-rose-500">*</span>
                 </label>
                 <input type="password" name="password_confirmation" id="password_confirmation" placeholder="Ulangi kata sandi..." required class="w-full py-2.5 px-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+            </div>
+
+            <!-- Konfirmasi Kata Sandi Superadmin -->
+            <div class="sm:col-span-2 pt-2 border-t border-slate-100">
+                <label for="current_password" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                    Konfirmasi Kata Sandi Superadmin Anda <span class="text-rose-500">*</span>
+                </label>
+                <input type="password" name="current_password" id="current_password" placeholder="Masukkan kata sandi akun Anda saat ini untuk otorisasi" required class="w-full py-2.5 px-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
             </div>
 
             <!-- Status Aktif Toggle -->

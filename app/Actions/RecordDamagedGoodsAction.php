@@ -12,6 +12,7 @@ use App\Models\DamagedGood;
 use App\Models\Product;
 use App\Models\ProductSerial;
 use App\Models\StockMutation;
+use App\Services\TransactionCodeGenerator;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -26,7 +27,7 @@ class RecordDamagedGoodsAction
     {
         return DB::transaction(function () use ($data, $userId) {
             $date = ! empty($data['reported_at']) ? Carbon::parse($data['reported_at']) : Carbon::now();
-            $code = $this->generateDamagedCode($date);
+            $code = TransactionCodeGenerator::next('DMG-'.$date->format('Ym').'-', 'damaged_goods', 'code');
 
             $damageCategory = is_string($data['damage_category'])
                 ? DamageCategory::from($data['damage_category'])
@@ -107,22 +108,6 @@ class RecordDamagedGoodsAction
             ]);
 
             return $damagedGood->load(['product.unit']);
-        });
-    }
-
-    protected function generateDamagedCode(Carbon $date): string
-    {
-        $prefix = 'DMG-'.$date->format('Ym').'-';
-        $last = DamagedGood::where('code', 'like', "{$prefix}%")
-            ->lockForUpdate()
-            ->orderBy('id', 'desc')
-            ->first();
-
-        $number = 1;
-        if ($last && preg_match('/-(\d+)$/', $last->code, $matches)) {
-            $number = intval($matches[1]) + 1;
-        }
-
-        return $prefix.str_pad((string) $number, 4, '0', STR_PAD_LEFT);
+        }, 3);
     }
 }

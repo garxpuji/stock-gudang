@@ -153,7 +153,7 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">Foto Bukti (Opsional)</label>
-                                <input type="file" :name="'items[' + index + '][photo_proof]'" accept="image/*" class="w-full text-xs text-slate-600 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-800">
+                                <input type="file" :name="'items[' + index + '][photo_proof]'" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" class="w-full text-xs text-slate-600 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-800">
                             </div>
                             <div class="sm:col-span-2">
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">Keterangan Kerusakan</label>

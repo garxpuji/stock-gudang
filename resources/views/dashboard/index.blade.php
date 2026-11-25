@@ -184,7 +184,9 @@
     <div class="bg-white rounded-xl border border-slate-200 p-5">
         <div class="flex items-center justify-between mb-3">
             <h2 class="text-sm font-bold text-slate-900">Stok Berdasarkan Kategori</h2>
-            <a href="{{ route('categories.index') }}" class="text-xs font-semibold text-emerald-700 hover:underline">Kelola Kategori</a>
+            @if(Auth::user()?->isAdminGudang())
+                <a href="{{ route('categories.index') }}" class="text-xs font-semibold text-emerald-700 hover:underline">Kelola Kategori</a>
+            @endif
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
             @foreach($categoriesBreakdown as $cat)

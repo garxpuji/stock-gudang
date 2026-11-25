@@ -9,6 +9,7 @@ use App\Models\ProductSerial;
 use App\Models\StockInItem;
 use App\Models\StockInTransaction;
 use App\Models\StockMutation;
+use App\Services\TransactionCodeGenerator;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -21,7 +22,7 @@ class InboundStockAction
     {
         return DB::transaction(function () use ($data, $userId) {
             $date = ! empty($data['transaction_date']) ? Carbon::parse($data['transaction_date']) : Carbon::now();
-            $code = $this->generateTransactionCode($date);
+            $code = TransactionCodeGenerator::next('IN-'.$date->format('Ym').'-', 'stock_in_transactions');
 
             $totalItems = 0;
             $totalCost = 0.00;
@@ -76,7 +77,7 @@ class InboundStockAction
                                 [
                                     'mac_address' => ! empty($mac) ? $mac : null,
                                     'status' => SerialStatus::AVAILABLE,
-                                    'notes' => 'Penerimaan masuk via ' . $code,
+                                    'notes' => 'Penerimaan masuk via '.$code,
                                 ]
                             );
                             $snList[] = $sn;
@@ -97,7 +98,7 @@ class InboundStockAction
                                 ],
                                 [
                                     'status' => SerialStatus::AVAILABLE,
-                                    'notes' => 'Penerimaan masuk via ' . $code,
+                                    'notes' => 'Penerimaan masuk via '.$code,
                                 ]
                             );
                             $snList[] = $sn;
@@ -132,7 +133,7 @@ class InboundStockAction
                     'reference_table' => 'stock_in_transactions',
                     'reference_id' => $transaction->id,
                     'reference_ticket_no' => $data['po_number'] ?? ($data['vendor_delivery_order_no'] ?? null),
-                    'remarks' => "Barang Masuk Inbound [{$code}] dari " . ($data['supplier_name'] ?? 'Vendor') . ($data['vendor_delivery_order_no'] ? " (SJ: {$data['vendor_delivery_order_no']})" : ''),
+                    'remarks' => "Barang Masuk Inbound [{$code}] dari ".($data['supplier_name'] ?? 'Vendor').($data['vendor_delivery_order_no'] ? " (SJ: {$data['vendor_delivery_order_no']})" : ''),
                 ]);
 
                 $totalItems += 1;
@@ -145,22 +146,6 @@ class InboundStockAction
             ]);
 
             return $transaction->load(['items.product', 'supplier', 'receivedBy']);
-        });
-    }
-
-    protected function generateTransactionCode(Carbon $date): string
-    {
-        $prefix = 'IN-' . $date->format('Ym') . '-';
-        $last = StockInTransaction::where('transaction_code', 'like', "{$prefix}%")
-            ->lockForUpdate()
-            ->orderBy('id', 'desc')
-            ->first();
-
-        $number = 1;
-        if ($last && preg_match('/-(\d+)$/', $last->transaction_code, $matches)) {
-            $number = intval($matches[1]) + 1;
-        }
-
-        return $prefix . str_pad((string) $number, 4, '0', STR_PAD_LEFT);
+        }, 3);
     }
 }

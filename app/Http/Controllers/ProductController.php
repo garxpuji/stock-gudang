@@ -22,9 +22,9 @@ class ProductController extends Controller
     {
         $query = Product::with(['category', 'unit', 'location'])
             ->withCount([
-                'serials as available_serials_count' => fn($q) => $q->where('status', 'AVAILABLE'),
-                'serials as issued_serials_count' => fn($q) => $q->where('status', 'ISSUED'),
-                'serials as damaged_serials_count' => fn($q) => $q->where('status', 'DAMAGED'),
+                'serials as available_serials_count' => fn ($q) => $q->where('status', 'AVAILABLE'),
+                'serials as issued_serials_count' => fn ($q) => $q->where('status', 'ISSUED'),
+                'serials as damaged_serials_count' => fn ($q) => $q->where('status', 'DAMAGED'),
             ]);
 
         if ($request->filled('search')) {

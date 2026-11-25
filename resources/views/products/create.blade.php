@@ -41,7 +41,7 @@
             <div>
                 <div class="flex items-center justify-between mb-1">
                     <label for="category_id" class="text-xs font-bold text-slate-700">Kategori <span class="text-rose-600">*</span></label>
-                    <a href="{{ route('categories.create', ['redirect_to' => url()->current()]) }}" class="text-xs text-emerald-700 font-semibold hover:underline">+ Buat Kategori</a>
+                    <a href="{{ route('categories.create', ['redirect_to' => route('products.create', [], false)]) }}" class="text-xs text-emerald-700 font-semibold hover:underline">+ Buat Kategori</a>
                 </div>
                 <select name="category_id" id="category_id" required class="w-full py-2.5 px-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 min-h-[44px]">
                     <option value="">-- Pilih Kategori --</option>
@@ -55,7 +55,7 @@
             <div>
                 <div class="flex items-center justify-between mb-1">
                     <label for="unit_id" class="text-xs font-bold text-slate-700">Satuan Ukur <span class="text-rose-600">*</span></label>
-                    <a href="{{ route('units.create', ['redirect_to' => url()->current()]) }}" class="text-xs text-emerald-700 font-semibold hover:underline">+ Buat Satuan</a>
+                    <a href="{{ route('units.create', ['redirect_to' => route('products.create', [], false)]) }}" class="text-xs text-emerald-700 font-semibold hover:underline">+ Buat Satuan</a>
                 </div>
                 <select name="unit_id" id="unit_id" required class="w-full py-2.5 px-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 min-h-[44px]">
                     <option value="">-- Pilih Satuan --</option>
@@ -69,7 +69,7 @@
             <div>
                 <div class="flex items-center justify-between mb-1">
                     <label for="location_id" class="text-xs font-bold text-slate-700">Lokasi Rak</label>
-                    <a href="{{ route('locations.create', ['redirect_to' => url()->current()]) }}" class="text-xs text-emerald-700 font-semibold hover:underline">+ Buat Rak</a>
+                    <a href="{{ route('locations.create', ['redirect_to' => route('products.create', [], false)]) }}" class="text-xs text-emerald-700 font-semibold hover:underline">+ Buat Rak</a>
                 </div>
                 <select name="location_id" id="location_id" class="w-full py-2.5 px-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 min-h-[44px]">
                     <option value="">-- Pilih Lokasi Rak --</option>

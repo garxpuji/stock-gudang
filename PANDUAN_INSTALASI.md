@@ -69,6 +69,7 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 > [!TIP]
+> - Untuk pengembangan lokal di komputer sendiri, Anda dapat menyetel `APP_DEBUG=true`. Namun saat deploy ke server produksi, **wajib** gunakan `APP_ENV=production` dan `APP_DEBUG=false` agar detail error dan variabel lingkungan tidak bocor.
 > - Jika instalasi MariaDB / MySQL Anda menggunakan port default `3306`, ubah `DB_PORT=3306`.
 > - Pastikan database `stock_gudang` telah dibuat di server MariaDB/MySQL Anda:
 >   ```sql

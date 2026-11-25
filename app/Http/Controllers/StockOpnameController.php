@@ -33,15 +33,16 @@ class StockOpnameController extends Controller
 
     public function store(StockOpnameRequest $request, StockOpnameAction $action): RedirectResponse
     {
-        $userId = Auth::id() ?? 1;
+        $userId = Auth::id();
+        abort_if($userId === null, 401);
 
         try {
             $product = $action->execute($request->validated(), $userId);
 
             return redirect()->route('products.show', $product)
                 ->with('success', "Penyesuaian stok opname untuk '{$product->name}' berhasil disimpan.");
-        } catch (\Exception $e) {
-            return back()->withInput()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            return $this->handleTransactionException($e, 'opname.store_failed');
         }
     }
 }

@@ -6,6 +6,7 @@ use App\Actions\OutboundStockAction;
 use App\Http\Requests\StoreOutboundRequest;
 use App\Models\Product;
 use App\Models\StockOutTransaction;
+use App\Support\SqlLike;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,13 +19,13 @@ class StockOutController extends Controller
         $query = StockOutTransaction::with(['dispatchedBy', 'items.product.unit', 'items.serials']);
 
         if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('transaction_code', 'like', "%{$search}%")
-                    ->orWhere('picked_up_by', 'like', "%{$search}%")
-                    ->orWhere('reference_ticket_no', 'like', "%{$search}%")
-                    ->orWhere('recipient_department_or_team', 'like', "%{$search}%")
-                    ->orWhere('purpose', 'like', "%{$search}%");
+            $like = SqlLike::contains((string) $request->input('search'));
+            $query->where(function ($q) use ($like) {
+                $q->where('transaction_code', 'like', $like)
+                    ->orWhere('picked_up_by', 'like', $like)
+                    ->orWhere('reference_ticket_no', 'like', $like)
+                    ->orWhere('recipient_department_or_team', 'like', $like)
+                    ->orWhere('purpose', 'like', $like);
             });
         }
 
@@ -67,15 +68,16 @@ class StockOutController extends Controller
 
     public function store(StoreOutboundRequest $request, OutboundStockAction $action): RedirectResponse
     {
-        $userId = Auth::id() ?? 1;
+        $userId = Auth::id();
+        abort_if($userId === null, 401);
 
         try {
             $transaction = $action->execute($request->validated(), $userId);
 
             return redirect()->route('stock-out.show', $transaction)
                 ->with('success', "Pengeluaran barang [{$transaction->transaction_code}] berhasil dibukukan.");
-        } catch (\Exception $e) {
-            return back()->withInput()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            return $this->handleTransactionException($e, 'stock_out.store_failed');
         }
     }
 

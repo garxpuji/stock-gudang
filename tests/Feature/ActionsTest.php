@@ -271,4 +271,83 @@ class ActionsTest extends TestCase
             ],
         ], $this->admin->id);
     }
+
+    public function test_outbound_stock_action_rejects_missing_serials_for_serialized_product(): void
+    {
+        $product = Product::where('sku', 'ONT-ZTE-F609')->firstOrFail();
+
+        $action = new OutboundStockAction;
+
+        $this->expectException(InvalidSerialException::class);
+        $action->execute([
+            'recipient_type' => RecipientType::TEKNISI,
+            'picked_up_by' => 'Joko Susilo',
+            'recipient_department_or_team' => 'Tim PSB 2',
+            'purpose' => 'Pasang Baru Tanpa SN',
+            'items' => [
+                [
+                    'product_id' => $product->id,
+                    'qty' => 1,
+                ],
+            ],
+        ], $this->admin->id);
+    }
+
+    public function test_outbound_stock_action_rejects_serial_ids_on_non_serialized_product(): void
+    {
+        $nonSerialProduct = Product::where('sku', 'CBL-DC-1C-MTR')->firstOrFail();
+        $serialProduct = Product::where('sku', 'ONT-ZTE-F609')->firstOrFail();
+        $otherSerial = ProductSerial::where('product_id', $serialProduct->id)
+            ->where('status', SerialStatus::AVAILABLE)
+            ->firstOrFail();
+
+        $action = new OutboundStockAction;
+
+        try {
+            $action->execute([
+                'recipient_type' => RecipientType::TEKNISI,
+                'picked_up_by' => 'Joko Susilo',
+                'recipient_department_or_team' => 'Tim PSB 2',
+                'purpose' => 'Tampering SN Lintas Produk',
+                'items' => [
+                    [
+                        'product_id' => $nonSerialProduct->id,
+                        'qty' => 10,
+                        'serial_ids' => [$otherSerial->id],
+                    ],
+                ],
+            ], $this->admin->id);
+            $this->fail('Expected InvalidSerialException was not thrown.');
+        } catch (InvalidSerialException $e) {
+            $otherSerial->refresh();
+            $this->assertEquals(SerialStatus::AVAILABLE, $otherSerial->status);
+        }
+    }
+
+    public function test_transaction_code_generator_increments_atomically(): void
+    {
+        $product = Product::where('sku', 'CBL-DC-1C-MTR')->firstOrFail();
+        $action = new OutboundStockAction;
+
+        $tx1 = $action->execute([
+            'recipient_type' => RecipientType::TEKNISI,
+            'picked_up_by' => 'Teknisi A',
+            'recipient_department_or_team' => 'Tim A',
+            'purpose' => 'PSB 1',
+            'transaction_date' => '2026-12-01 10:00:00',
+            'items' => [['product_id' => $product->id, 'qty' => 5]],
+        ], $this->admin->id);
+
+        $tx2 = $action->execute([
+            'recipient_type' => RecipientType::TEKNISI,
+            'picked_up_by' => 'Teknisi B',
+            'recipient_department_or_team' => 'Tim B',
+            'purpose' => 'PSB 2',
+            'transaction_date' => '2026-12-01 10:05:00',
+            'items' => [['product_id' => $product->id, 'qty' => 5]],
+        ], $this->admin->id);
+
+        $this->assertEquals('OUT-202612-0001', $tx1->transaction_code);
+        $this->assertEquals('OUT-202612-0002', $tx2->transaction_code);
+    }
 }

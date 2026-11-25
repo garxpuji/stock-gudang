@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Supplier;
+use App\Support\SqlLike;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -15,13 +16,13 @@ class SupplierController extends Controller
         $query = Supplier::withCount('stockIns');
 
         if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('code', 'like', "%{$search}%")
-                    ->orWhere('contact_name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
+            $like = SqlLike::contains((string) $request->input('search'));
+            $query->where(function ($q) use ($like) {
+                $q->where('name', 'like', $like)
+                    ->orWhere('code', 'like', $like)
+                    ->orWhere('contact_name', 'like', $like)
+                    ->orWhere('phone', 'like', $like)
+                    ->orWhere('email', 'like', $like);
             });
         }
 
@@ -48,15 +49,7 @@ class SupplierController extends Controller
 
         $supplier = Supplier::create($validated);
 
-        if ($request->filled('redirect_to')) {
-            $redirectTo = (string) $request->input('redirect_to');
-            if ((str_starts_with($redirectTo, '/') && ! str_starts_with($redirectTo, '//')) || str_starts_with($redirectTo, url('/'))) {
-                return redirect($redirectTo)
-                    ->with('success', "Supplier '{$supplier->name}' berhasil ditambahkan.");
-            }
-        }
-
-        return redirect()->route('suppliers.index')
+        return redirect($this->resolveSafeRedirect($request->input('redirect_to'), 'suppliers.index'))
             ->with('success', "Supplier '{$supplier->name}' berhasil ditambahkan.");
     }
 

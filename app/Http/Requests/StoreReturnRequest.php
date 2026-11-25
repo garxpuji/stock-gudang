@@ -35,7 +35,8 @@ class StoreReturnRequest extends FormRequest
             'items.*.qc_notes' => 'nullable|string',
             'items.*.damage_category' => ['nullable', Rule::enum(DamageCategory::class)],
             'items.*.damage_description' => 'nullable|string',
-            'items.*.photo_proof' => 'nullable|image|max:5120', // max 5MB
+            'items.*.photo_proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'photo_proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ];
     }
 

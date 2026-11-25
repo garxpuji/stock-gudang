@@ -94,7 +94,7 @@
             <!-- Upload Foto Bukti -->
             <div class="md:col-span-2">
                 <label for="photo_proof" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Foto Kondisi Fisik Perangkat</label>
-                <input type="file" name="photo_proof" id="photo_proof" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100">
+                <input type="file" name="photo_proof" id="photo_proof" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" class="w-full text-xs text-slate-500 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100">
             </div>
 
         </div>

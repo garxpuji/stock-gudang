@@ -130,6 +130,11 @@
                                     </span>
                                 @endif
                                 <p class="text-slate-500 mt-1 italic">{{ $item->qc_notes }}</p>
+                                @if($item->damagedGoodRecord?->photo_proof)
+                                    <a href="{{ route('damaged-goods.photo', $item->damagedGoodRecord) }}" target="_blank" class="inline-flex items-center gap-1 mt-1.5 text-emerald-700 font-semibold hover:underline">
+                                        Lihat Foto Bukti
+                                    </a>
+                                @endif
                             </td>
                         </tr>
                     @endforeach

@@ -88,7 +88,8 @@ Eksekusi perintah SQL berikut untuk membuat database dan user aplikasi:
 CREATE DATABASE IF NOT EXISTS stock_gudang CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE USER IF NOT EXISTS 'gudang_user'@'localhost' IDENTIFIED BY '<your_secure_password>';
-GRANT ALL PRIVILEGES ON stock_gudang.* TO 'gudang_user'@'localhost';
+-- Prinsip Least Privilege: berikan hak seperlunya (tanpa DROP / GRANT OPTION)
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, REFERENCES ON stock_gudang.* TO 'gudang_user'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
 ```
@@ -145,7 +146,7 @@ APP_NAME="Stock Gudang GMI"
 APP_ENV=production
 APP_KEY=
 APP_DEBUG=false
-APP_URL=http://gudang.gayuhmedia.id  # Ganti dengan IP VM atau domain Anda
+APP_URL=https://gudang.gayuhmedia.id  # Ganti dengan IP VM atau domain Anda
 
 DB_CONNECTION=mariadb
 DB_HOST=127.0.0.1
@@ -153,7 +154,13 @@ DB_PORT=3306                        # Sesuaikan port MariaDB Anda (3306 / 3307)
 DB_DATABASE=stock_gudang
 DB_USERNAME=gudang_user
 DB_PASSWORD=<your_secure_password>
+
+SESSION_ENCRYPT=true
+SESSION_SECURE_COOKIE=true          # Set false sementara jika belum mengaktifkan HTTPS
 ```
+
+> [!CAUTION]
+> Pastikan nilai `APP_DEBUG=false` dan `APP_ENV=production` selalu dipertahankan di server produksi. Mengaktifkan `APP_DEBUG=true` di lingkungan produksi akan membocorkan *stack trace*, path direktori server, dan variabel sensitif `.env` ke publik saat terjadi error.
 
 ### 3. Install Dependensi PHP (Optimasi Produksi)
 ```bash
@@ -171,9 +178,12 @@ sudo npm install
 sudo npm run build
 ```
 
-### 6. Jalankan Migrasi Database & Seeder
+### 6. Jalankan Migrasi Database & Seeding Awal (Satu Kali)
 ```bash
-sudo php artisan migrate --force --seed
+sudo php artisan migrate --force
+
+# Jalankan seeder akun awal HANYA saat instalasi pertama dengan password kuat dari environment:
+INITIAL_ADMIN_PASSWORD='<ganti_dengan_password_kuat_min_10_karakter>' sudo -E php artisan db:seed --class=UserSeeder --force
 ```
 
 ### 7. Buat Symbolic Link Storage Foto Bukti
@@ -217,9 +227,9 @@ server {
     server_name gudang.gayuhmedia.id 192.168.1.100; # Ganti domain atau IP VM Anda
     root /var/www/stock-gudang/public;
 
-    add_header X-Frame-Options "SAMEORIGIN";
-    add_header X-Content-Type-Options "nosniff";
-    add_header X-XSS-Protection "1; mode=block";
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 
     index index.php index.html;
     charset utf-8;
@@ -250,6 +260,7 @@ server {
     location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff|woff2|ttf|svg)$ {
         expires 30d;
         add_header Cache-Control "public, no-transform";
+        add_header X-Content-Type-Options "nosniff" always;
     }
 }
 ```

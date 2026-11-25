@@ -62,9 +62,19 @@ class User extends Authenticatable
         return $this->hasMany(StockMutation::class, 'system_operator_id');
     }
 
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'superadmin';
+    }
+
     public function isAdminGudang(): bool
     {
-        return in_array($this->role, ['admin_gudang', 'superadmin']);
+        return in_array($this->role, ['admin_gudang', 'superadmin'], true);
+    }
+
+    public function isStaffGudang(): bool
+    {
+        return $this->role === 'staff_gudang';
     }
 
     public function getRoleBadgeAttribute(): string
@@ -72,6 +82,7 @@ class User extends Authenticatable
         return match ($this->role) {
             'superadmin' => 'bg-purple-50 text-purple-700 border-purple-200',
             'admin_gudang' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            'staff_gudang' => 'bg-sky-50 text-sky-700 border-sky-200',
             default => 'bg-slate-50 text-slate-700 border-slate-200',
         };
     }

@@ -16,7 +16,7 @@ class UserControllerTest extends TestCase
         parent::setUp();
         $this->artisan('migrate:fresh', ['--database' => 'mariadb']);
         $this->seed([UserSeeder::class]);
-        $this->admin = User::where('email', 'admin@gayuhmedia.id')->firstOrFail();
+        $this->admin = User::where('email', 'tegar@gayuhmedia.id')->firstOrFail();
     }
 
     public function test_users_index_renders_successfully(): void
@@ -34,6 +34,7 @@ class UserControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Tambah Pengguna Baru');
         $response->assertSee('Alamat Email (Login)');
+        $response->assertSee('Konfirmasi Kata Sandi Superadmin Anda');
     }
 
     public function test_user_can_be_stored(): void
@@ -43,9 +44,10 @@ class UserControllerTest extends TestCase
             'email' => 'teknisi@gayuhmedia.id',
             'phone' => '089912345678',
             'role' => 'admin_gudang',
-            'password' => 'secret123',
-            'password_confirmation' => 'secret123',
+            'password' => 'Secret12345',
+            'password_confirmation' => 'Secret12345',
             'is_active' => '1',
+            'current_password' => 'password',
         ];
 
         $response = $this->actingAs($this->admin)->post(route('users.store'), $payload);
@@ -82,6 +84,7 @@ class UserControllerTest extends TestCase
             'password' => '',
             'password_confirmation' => '',
             'is_active' => '1',
+            'current_password' => 'password',
         ];
 
         $response = $this->actingAs($this->admin)->put(route('users.update', $targetUser), $payload);
@@ -133,15 +136,108 @@ class UserControllerTest extends TestCase
 
     public function test_non_admin_user_cannot_access_user_management(): void
     {
+        $adminGudang = User::where('email', 'admin@gayuhmedia.id')->firstOrFail();
+
+        $this->actingAs($adminGudang)->get(route('users.index'))->assertStatus(403);
+        $this->actingAs($adminGudang)->post(route('users.store'), [])->assertStatus(403);
+
         $staff = User::create([
             'name' => 'Staff Biasa',
             'email' => 'staff@gayuhmedia.id',
             'role' => 'staff_gudang',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Password1234'),
             'is_active' => true,
         ]);
 
-        $response = $this->actingAs($staff)->get(route('users.index'));
-        $response->assertStatus(403);
+        $this->actingAs($staff)->get(route('users.index'))->assertStatus(403);
+    }
+
+    public function test_user_password_enforces_complexity_and_length_bounds(): void
+    {
+        // Terlalu pendek (< 10)
+        $this->actingAs($this->admin)->post(route('users.store'), [
+            'name' => 'Staff Password Pendek',
+            'email' => 'short@gayuhmedia.id',
+            'role' => 'staff_gudang',
+            'password' => 'Short123',
+            'password_confirmation' => 'Short123',
+            'is_active' => '1',
+            'current_password' => 'password',
+        ])->assertSessionHasErrors('password');
+
+        // Tanpa angka
+        $this->actingAs($this->admin)->post(route('users.store'), [
+            'name' => 'Staff Tanpa Angka',
+            'email' => 'no-digit@gayuhmedia.id',
+            'role' => 'staff_gudang',
+            'password' => 'OnlyLettersPass',
+            'password_confirmation' => 'OnlyLettersPass',
+            'is_active' => '1',
+            'current_password' => 'password',
+        ])->assertSessionHasErrors('password');
+
+        // Terlalu panjang (> 128)
+        $tooLong = str_repeat('a1', 65);
+        $this->actingAs($this->admin)->post(route('users.store'), [
+            'name' => 'Staff Terlalu Panjang',
+            'email' => 'long@gayuhmedia.id',
+            'role' => 'staff_gudang',
+            'password' => $tooLong,
+            'password_confirmation' => $tooLong,
+            'is_active' => '1',
+            'current_password' => 'password',
+        ])->assertSessionHasErrors('password');
+
+        $this->assertDatabaseMissing('users', ['email' => 'short@gayuhmedia.id']);
+        $this->assertDatabaseMissing('users', ['email' => 'no-digit@gayuhmedia.id']);
+        $this->assertDatabaseMissing('users', ['email' => 'long@gayuhmedia.id']);
+    }
+
+    public function test_user_management_requires_valid_current_password_for_sensitive_changes(): void
+    {
+        $responseStore = $this->actingAs($this->admin)->post(route('users.store'), [
+            'name' => 'Tanpa Verifikasi',
+            'email' => 'noverify@gayuhmedia.id',
+            'role' => 'staff_gudang',
+            'password' => 'Secret12345',
+            'password_confirmation' => 'Secret12345',
+            'is_active' => '1',
+            'current_password' => 'wrong-password',
+        ]);
+
+        $responseStore->assertSessionHasErrors('current_password');
+        $this->assertDatabaseMissing('users', ['email' => 'noverify@gayuhmedia.id']);
+
+        $targetUser = User::where('email', 'gudang@gayuhmedia.id')->firstOrFail();
+
+        $responseUpdate = $this->actingAs($this->admin)->put(route('users.update', $targetUser), [
+            'name' => $targetUser->name,
+            'email' => $targetUser->email,
+            'role' => 'superadmin',
+            'is_active' => '1',
+            'current_password' => 'wrong-password',
+        ]);
+
+        $responseUpdate->assertSessionHasErrors('current_password');
+        $this->assertEquals('admin_gudang', $targetUser->fresh()->role);
+    }
+
+    public function test_superadmin_can_create_staff_gudang_user(): void
+    {
+        $response = $this->actingAs($this->admin)->post(route('users.store'), [
+            'name' => 'Staf Loket',
+            'email' => 'staf.loket@gayuhmedia.id',
+            'role' => 'staff_gudang',
+            'password' => 'Secret12345',
+            'password_confirmation' => 'Secret12345',
+            'is_active' => '1',
+            'current_password' => 'password',
+        ]);
+
+        $response->assertRedirect(route('users.index'));
+        $this->assertDatabaseHas('users', [
+            'email' => 'staf.loket@gayuhmedia.id',
+            'role' => 'staff_gudang',
+        ]);
     }
 }

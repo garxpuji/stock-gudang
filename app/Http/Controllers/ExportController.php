@@ -9,9 +9,13 @@ use App\Models\Location;
 use App\Models\Product;
 use App\Models\ReturnTransaction;
 use App\Models\StockOutTransaction;
+use App\Support\SqlLike;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -22,6 +26,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ExportController extends Controller
 {
+    private const MAX_EXPORT_ROWS = 5000;
+
     /**
      * Export Stok Tersedia (Active Product Catalog) ke Excel (.xlsx) atau PDF (.pdf)
      */
@@ -61,8 +67,15 @@ class ExportController extends Controller
             };
         }
 
-        $products = $query->orderBy('name')->get();
+        $products = $query->orderBy('name')->limit(self::MAX_EXPORT_ROWS)->get();
         $type = strtolower($request->input('type', 'excel'));
+
+        Log::info('security.report_exported', [
+            'report' => 'products',
+            'format' => $type,
+            'rows' => $products->count(),
+            'user_id' => Auth::id(),
+        ]);
 
         // 1. Ekspor ke PDF
         if ($type === 'pdf') {
@@ -143,14 +156,15 @@ class ExportController extends Controller
         $activeFilters = [];
 
         if ($request->filled('search')) {
-            $search = $request->input('search');
+            $search = (string) $request->input('search');
+            $like = SqlLike::contains($search);
             $activeFilters[] = 'Pencarian: "'.$search.'"';
-            $query->where(function ($q) use ($search) {
-                $q->where('transaction_code', 'like', "%{$search}%")
-                    ->orWhere('picked_up_by', 'like', "%{$search}%")
-                    ->orWhere('reference_ticket_no', 'like', "%{$search}%")
-                    ->orWhere('recipient_department_or_team', 'like', "%{$search}%")
-                    ->orWhere('purpose', 'like', "%{$search}%");
+            $query->where(function ($q) use ($like) {
+                $q->where('transaction_code', 'like', $like)
+                    ->orWhere('picked_up_by', 'like', $like)
+                    ->orWhere('reference_ticket_no', 'like', $like)
+                    ->orWhere('recipient_department_or_team', 'like', $like)
+                    ->orWhere('purpose', 'like', $like);
             });
         }
 
@@ -174,8 +188,15 @@ class ExportController extends Controller
             $activeFilters[] = 'Sampai: '.$request->input('date_to');
         }
 
-        $transactions = $query->latest('transaction_date')->latest('id')->get();
+        $transactions = $query->latest('transaction_date')->latest('id')->limit(self::MAX_EXPORT_ROWS)->get();
         $type = strtolower($request->input('type', 'excel'));
+
+        Log::info('security.report_exported', [
+            'report' => 'stock_out',
+            'format' => $type,
+            'rows' => $transactions->count(),
+            'user_id' => Auth::id(),
+        ]);
 
         // 1. Ekspor ke PDF
         if ($type === 'pdf') {
@@ -258,13 +279,14 @@ class ExportController extends Controller
         $activeFilters = [];
 
         if ($request->filled('search')) {
-            $search = $request->input('search');
+            $search = (string) $request->input('search');
+            $like = SqlLike::contains($search);
             $activeFilters[] = 'Pencarian: "'.$search.'"';
-            $query->where(function ($q) use ($search) {
-                $q->where('transaction_code', 'like', "%{$search}%")
-                    ->orWhere('returned_by', 'like', "%{$search}%")
-                    ->orWhere('reference_ticket_no', 'like', "%{$search}%")
-                    ->orWhere('return_category', 'like', "%{$search}%");
+            $query->where(function ($q) use ($like) {
+                $q->where('transaction_code', 'like', $like)
+                    ->orWhere('returned_by', 'like', $like)
+                    ->orWhere('reference_ticket_no', 'like', $like)
+                    ->orWhere('return_category', 'like', $like);
             });
         }
 
@@ -290,8 +312,15 @@ class ExportController extends Controller
             $activeFilters[] = 'Status QC: '.$request->input('qc_status');
         }
 
-        $returns = $query->latest('transaction_date')->latest('id')->get();
+        $returns = $query->latest('transaction_date')->latest('id')->limit(self::MAX_EXPORT_ROWS)->get();
         $type = strtolower($request->input('type', 'excel'));
+
+        Log::info('security.report_exported', [
+            'report' => 'returns',
+            'format' => $type,
+            'rows' => $returns->count(),
+            'user_id' => Auth::id(),
+        ]);
 
         // 1. Ekspor ke PDF
         if ($type === 'pdf') {
@@ -373,16 +402,17 @@ class ExportController extends Controller
         $activeFilters = [];
 
         if ($request->filled('search')) {
-            $search = $request->input('search');
+            $search = (string) $request->input('search');
+            $like = SqlLike::contains($search);
             $activeFilters[] = 'Pencarian: "'.$search.'"';
-            $query->where(function ($q) use ($search) {
-                $q->where('code', 'like', "%{$search}%")
-                    ->orWhere('serial_number', 'like', "%{$search}%")
-                    ->orWhere('reported_by', 'like', "%{$search}%")
-                    ->orWhere('damage_description', 'like', "%{$search}%")
-                    ->orWhereHas('product', function ($pq) use ($search) {
-                        $pq->where('name', 'like', "%{$search}%")
-                            ->orWhere('sku', 'like', "%{$search}%");
+            $query->where(function ($q) use ($like) {
+                $q->where('code', 'like', $like)
+                    ->orWhere('serial_number', 'like', $like)
+                    ->orWhere('reported_by', 'like', $like)
+                    ->orWhere('damage_description', 'like', $like)
+                    ->orWhereHas('product', function ($pq) use ($like) {
+                        $pq->where('name', 'like', $like)
+                            ->orWhere('sku', 'like', $like);
                     });
             });
         }
@@ -420,8 +450,15 @@ class ExportController extends Controller
             $activeFilters[] = 'Sampai: '.$request->input('date_to');
         }
 
-        $damagedGoods = $query->latest('reported_at')->get();
+        $damagedGoods = $query->latest('reported_at')->limit(self::MAX_EXPORT_ROWS)->get();
         $type = strtolower($request->input('type', 'excel'));
+
+        Log::info('security.report_exported', [
+            'report' => 'damaged_goods',
+            'format' => $type,
+            'rows' => $damagedGoods->count(),
+            'user_id' => Auth::id(),
+        ]);
 
         // 1. Ekspor ke PDF
         if ($type === 'pdf') {
@@ -547,7 +584,15 @@ class ExportController extends Controller
         foreach ($dataRows as $row) {
             foreach ($row as $colIndex => $val) {
                 $colLetter = Coordinate::stringFromColumnIndex($colIndex + 1);
-                $sheet->setCellValue($colLetter.$currentRow, $val);
+                if (is_int($val) || is_float($val)) {
+                    $sheet->setCellValueExplicit($colLetter.$currentRow, $val, DataType::TYPE_NUMERIC);
+                } else {
+                    $sheet->setCellValueExplicit(
+                        $colLetter.$currentRow,
+                        $this->sanitizeExcelString((string) ($val ?? '')),
+                        DataType::TYPE_STRING
+                    );
+                }
             }
 
             // Zebra striping untuk baris genap
@@ -604,12 +649,26 @@ class ExportController extends Controller
         }
     }
 
+    private function sanitizeExcelString(string $value): string
+    {
+        if ($value === '' || $value === '-') {
+            return $value;
+        }
+
+        if (preg_match('/^[=+\-@]/', ltrim($value, " \t\r\n")) === 1 || preg_match('/^[\t\r\n]/', $value) === 1) {
+            return "'".$value;
+        }
+
+        return $value;
+    }
+
     /**
      * Response stream download file Microsoft Excel (.xlsx)
      */
     private function downloadExcelResponse(Spreadsheet $spreadsheet, string $filename): Response
     {
         $writer = new Xlsx($spreadsheet);
+        $writer->setPreCalculateFormulas(false);
 
         return response()->streamDownload(function () use ($writer) {
             $writer->save('php://output');

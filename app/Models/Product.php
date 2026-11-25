@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\StockStatus;
+use App\Support\SqlLike;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -163,13 +164,15 @@ class Product extends Model
             return $query;
         }
 
-        return $query->where(function ($q) use ($term) {
-            $q->where('name', 'like', "%{$term}%")
-                ->orWhere('sku', 'like', "%{$term}%")
-                ->orWhere('barcode', 'like', "%{$term}%")
-                ->orWhereHas('serials', function ($sq) use ($term) {
-                    $sq->where('serial_number', 'like', "%{$term}%")
-                        ->orWhere('mac_address', 'like', "%{$term}%");
+        $like = SqlLike::contains($term);
+
+        return $query->where(function ($q) use ($like) {
+            $q->where('name', 'like', $like)
+                ->orWhere('sku', 'like', $like)
+                ->orWhere('barcode', 'like', $like)
+                ->orWhereHas('serials', function ($sq) use ($like) {
+                    $sq->where('serial_number', 'like', $like)
+                        ->orWhere('mac_address', 'like', $like);
                 });
         });
     }

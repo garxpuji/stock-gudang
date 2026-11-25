@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\MutationType;
+use App\Support\SqlLike;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -61,22 +62,22 @@ class StockMutation extends Model
         }
 
         if (! empty($filters['ticket_no'])) {
-            $query->where('reference_ticket_no', 'like', "%{$filters['ticket_no']}%");
+            $query->where('reference_ticket_no', 'like', SqlLike::contains((string) $filters['ticket_no']));
         }
 
         if (! empty($filters['person'])) {
-            $query->where('person_in_charge', 'like', "%{$filters['person']}%");
+            $query->where('person_in_charge', 'like', SqlLike::contains((string) $filters['person']));
         }
 
         if (! empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('person_in_charge', 'like', "%{$search}%")
-                    ->orWhere('reference_ticket_no', 'like', "%{$search}%")
-                    ->orWhere('remarks', 'like', "%{$search}%")
-                    ->orWhereHas('product', function ($pq) use ($search) {
-                        $pq->where('name', 'like', "%{$search}%")
-                            ->orWhere('sku', 'like', "%{$search}%");
+            $like = SqlLike::contains((string) $filters['search']);
+            $query->where(function ($q) use ($like) {
+                $q->where('person_in_charge', 'like', $like)
+                    ->orWhere('reference_ticket_no', 'like', $like)
+                    ->orWhere('remarks', 'like', $like)
+                    ->orWhereHas('product', function ($pq) use ($like) {
+                        $pq->where('name', 'like', $like)
+                            ->orWhere('sku', 'like', $like);
                     });
             });
         }

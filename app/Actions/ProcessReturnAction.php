@@ -14,6 +14,7 @@ use App\Models\ProductSerial;
 use App\Models\ReturnTransaction;
 use App\Models\ReturnTransactionItem;
 use App\Models\StockMutation;
+use App\Services\TransactionCodeGenerator;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -26,7 +27,7 @@ class ProcessReturnAction
     {
         return DB::transaction(function () use ($data, $userId) {
             $date = ! empty($data['transaction_date']) ? Carbon::parse($data['transaction_date']) : Carbon::now();
-            $code = $this->generateTransactionCode($date);
+            $code = TransactionCodeGenerator::next('RET-'.$date->format('Ym').'-', 'return_transactions');
 
             $recipientType = ! empty($data['recipient_type'])
                 ? (is_string($data['recipient_type']) ? RecipientType::from($data['recipient_type']) : $data['recipient_type'])
@@ -149,7 +150,7 @@ class ProcessReturnAction
                         ? (is_string($item['damage_category']) ? DamageCategory::from($item['damage_category']) : $item['damage_category'])
                         : DamageCategory::PHYSICAL_DEFECT;
 
-                    $dmgCode = $this->generateDamagedCode($date);
+                    $dmgCode = TransactionCodeGenerator::next('DMG-'.$date->format('Ym').'-', 'damaged_goods', 'code');
 
                     DamagedGood::create([
                         'code' => $dmgCode,
@@ -187,38 +188,6 @@ class ProcessReturnAction
             }
 
             return $transaction->load(['items.product.unit', 'receivedBy', 'originalStockOut']);
-        });
-    }
-
-    protected function generateTransactionCode(Carbon $date): string
-    {
-        $prefix = 'RET-' . $date->format('Ym') . '-';
-        $last = ReturnTransaction::where('transaction_code', 'like', "{$prefix}%")
-            ->lockForUpdate()
-            ->orderBy('id', 'desc')
-            ->first();
-
-        $number = 1;
-        if ($last && preg_match('/-(\d+)$/', $last->transaction_code, $matches)) {
-            $number = intval($matches[1]) + 1;
-        }
-
-        return $prefix . str_pad((string) $number, 4, '0', STR_PAD_LEFT);
-    }
-
-    protected function generateDamagedCode(Carbon $date): string
-    {
-        $prefix = 'DMG-' . $date->format('Ym') . '-';
-        $last = DamagedGood::where('code', 'like', "{$prefix}%")
-            ->lockForUpdate()
-            ->orderBy('id', 'desc')
-            ->first();
-
-        $number = 1;
-        if ($last && preg_match('/-(\d+)$/', $last->code, $matches)) {
-            $number = intval($matches[1]) + 1;
-        }
-
-        return $prefix . str_pad((string) $number, 4, '0', STR_PAD_LEFT);
+        }, 3);
     }
 }

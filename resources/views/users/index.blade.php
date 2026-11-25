@@ -84,6 +84,7 @@
                     <option value="">Semua Peran / Role</option>
                     <option value="superadmin" {{ request('role') == 'superadmin' ? 'selected' : '' }}>Superadmin</option>
                     <option value="admin_gudang" {{ request('role') == 'admin_gudang' ? 'selected' : '' }}>Admin Gudang</option>
+                    <option value="staff_gudang" {{ request('role') == 'staff_gudang' ? 'selected' : '' }}>Staf Gudang</option>
                 </select>
             </div>
 
@@ -155,10 +156,15 @@
                                         <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
                                         Superadmin
                                     </span>
-                                @else
+                                @elseif($user->role === 'admin_gudang')
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                         Admin Gudang
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
+                                        Staf Gudang
                                     </span>
                                 @endif
                             </td>
