@@ -309,4 +309,16 @@ class SecurityHardeningTest extends TestCase
         $response->assertSee('Kabel Drop 100% Tembaga');
         $response->assertDontSee('ONT-ZTE-F609');
     }
+
+    public function test_custom_error_pages_and_opname_pagination_work_properly(): void
+    {
+        $notFoundResp = $this->actingAs($this->adminGudang)->get('/rute-tidak-ditemukan-xyz');
+        $notFoundResp->assertStatus(404);
+        $notFoundResp->assertSee('Halaman Tidak Ditemukan');
+
+        $opnameResp = $this->actingAs($this->adminGudang)->get(route('opname.index', ['search' => 'F609']));
+        $opnameResp->assertStatus(200);
+        $opnameResp->assertSee('ONT-ZTE-F609');
+        $opnameResp->assertDontSee('CBL-DC-1C-MTR');
+    }
 }

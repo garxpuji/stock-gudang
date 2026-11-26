@@ -12,6 +12,7 @@ use App\Support\SqlLike;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -19,7 +20,7 @@ class ReturnController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = ReturnTransaction::with(['receivedBy', 'items.product.unit']);
+        $query = ReturnTransaction::with(['receivedBy', 'items:id,return_transaction_id,qc_status']);
 
         if ($request->filled('search')) {
             $like = SqlLike::contains((string) $request->input('search'));
@@ -102,6 +103,7 @@ class ReturnController extends Controller
             }
 
             $transaction = $action->execute($data, $userId);
+            Cache::forget('nav.pending_damaged_count');
 
             return redirect()->route('returns.show', $transaction)
                 ->with('success', "Penerimaan retur barang [{$transaction->transaction_code}] dengan inspeksi QC berhasil disimpan.");

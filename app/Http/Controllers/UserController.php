@@ -7,6 +7,7 @@ use App\Support\SqlLike;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -110,6 +111,7 @@ class UserController extends Controller
             'password' => Hash::make($validated['password']),
             'is_active' => $request->boolean('is_active', true),
         ]);
+        Cache::forget('nav.total_users_count');
 
         Log::info('security.user_created', [
             'actor_id' => Auth::id(),
@@ -223,6 +225,7 @@ class UserController extends Controller
         $userName = $user->name;
         $this->revokeUserSessions($user);
         $user->delete();
+        Cache::forget('nav.total_users_count');
 
         Log::info('security.user_deleted', [
             'actor_id' => Auth::id(),

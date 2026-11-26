@@ -12,9 +12,15 @@ use Illuminate\View\View;
 
 class StockOpnameController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $products = Product::with(['category', 'unit', 'location'])->orderBy('name')->get();
+        $query = Product::with(['category', 'unit', 'location']);
+
+        if ($request->filled('search')) {
+            $query->search((string) $request->input('search'));
+        }
+
+        $products = $query->orderBy('name')->paginate(15)->withQueryString();
 
         return view('opname.index', compact('products'));
     }

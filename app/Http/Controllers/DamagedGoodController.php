@@ -13,6 +13,7 @@ use App\Support\SqlLike;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -90,6 +91,7 @@ class DamagedGoodController extends Controller
             }
 
             $damagedGood = $action->execute($data, $userId);
+            Cache::forget('nav.pending_damaged_count');
 
             return redirect()->route('damaged-goods.show', $damagedGood)
                 ->with('success', "Barang rusak [{$damagedGood->code}] berhasil dicatat dan masuk ke Area Karantina.");
@@ -147,6 +149,7 @@ class DamagedGoodController extends Controller
                 $request->only(['action_notes', 'loss_cost', 'rma_number']),
                 $userId
             );
+            Cache::forget('nav.pending_damaged_count');
 
             return redirect()->route('damaged-goods.show', $resolved)
                 ->with('success', "Tindakan lanjutan untuk [{$resolved->code}] berhasil diproses: {$resolved->action_taken->label()}.");

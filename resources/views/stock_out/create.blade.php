@@ -188,11 +188,7 @@ return [
 ];
 });
 @endphp
-<script id="outbound-serials-json" type="application/json">
-    {
-        !!json_encode($serialsMap) !!
-    }
-</script>
+<script id="outbound-serials-json" type="application/json">@json($serialsMap)</script>
 
 @push('scripts')
 <script>

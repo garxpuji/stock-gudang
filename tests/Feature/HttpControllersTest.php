@@ -78,10 +78,19 @@ class HttpControllersTest extends TestCase
             ->where('status', SerialStatus::AVAILABLE)
             ->firstOrFail();
 
-        // 1. Render create form
+        // 1. Render create form & verify serialized JSON payload is valid
         $responseCreate = $this->actingAs($this->admin)->get(route('stock-out.create'));
         $responseCreate->assertStatus(200);
         $responseCreate->assertSee('Loket Pengeluaran Barang');
+
+        $html = $responseCreate->getContent();
+        $this->assertMatchesRegularExpression('/<script id="outbound-serials-json" type="application\/json">(.*?)<\/script>/s', $html);
+        preg_match('/<script id="outbound-serials-json" type="application\/json">(.*?)<\/script>/s', $html, $matches);
+        $decodedSerials = json_decode(trim($matches[1] ?? ''), true);
+        $this->assertSame(JSON_ERROR_NONE, json_last_error());
+        $this->assertIsArray($decodedSerials);
+        $this->assertArrayHasKey((string) $product->id, $decodedSerials);
+        $this->assertContains($serial->serial_number, array_column($decodedSerials[(string) $product->id], 'serial_number'));
 
         // 2. Submit dispatch
         $responseStore = $this->actingAs($this->admin)->post(route('stock-out.store'), [

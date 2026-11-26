@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -40,8 +41,14 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('layouts.navigation-links', function (\Illuminate\View\View $view): void {
             $view->with([
-                'pendingDmg' => once(fn (): int => DamagedGood::where('action_taken', 'PENDING')->count()),
-                'totalUserCount' => once(fn (): int => Auth::user()?->isSuperAdmin() ? User::count() : 0),
+                'pendingDmg' => once(fn (): int => Cache::remember(
+                    'nav.pending_damaged_count',
+                    30,
+                    fn (): int => DamagedGood::where('action_taken', 'PENDING')->count(),
+                )),
+                'totalUserCount' => once(fn (): int => Auth::user()?->isSuperAdmin()
+                    ? Cache::remember('nav.total_users_count', 60, fn (): int => User::count())
+                    : 0),
             ]);
         });
     }

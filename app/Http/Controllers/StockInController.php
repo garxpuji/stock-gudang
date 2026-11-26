@@ -17,7 +17,7 @@ class StockInController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = StockInTransaction::with(['supplier', 'receivedBy', 'items.product.unit']);
+        $query = StockInTransaction::with(['supplier', 'receivedBy']);
 
         if ($request->filled('search')) {
             $like = SqlLike::contains((string) $request->input('search'));

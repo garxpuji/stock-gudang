@@ -16,7 +16,7 @@ class StockOutController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = StockOutTransaction::with(['dispatchedBy', 'items.product.unit', 'items.serials']);
+        $query = StockOutTransaction::with(['dispatchedBy']);
 
         if ($request->filled('search')) {
             $like = SqlLike::contains((string) $request->input('search'));
@@ -83,14 +83,14 @@ class StockOutController extends Controller
 
     public function show(StockOutTransaction $stockOut): View
     {
-        $stockOut->load(['dispatchedBy', 'items.product.unit', 'items.serials']);
+        $stockOut->load(['dispatchedBy', 'items.product.unit', 'items.product.category', 'items.serials']);
 
         return view('stock_out.show', compact('stockOut'));
     }
 
     public function print(StockOutTransaction $stockOut): View
     {
-        $stockOut->load(['dispatchedBy', 'items.product.unit', 'items.serials']);
+        $stockOut->load(['dispatchedBy', 'items.product.unit', 'items.product.category', 'items.serials']);
 
         return view('stock_out.print', compact('stockOut'));
     }

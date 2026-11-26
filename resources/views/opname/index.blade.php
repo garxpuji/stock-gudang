@@ -17,6 +17,26 @@
         </a>
     </div>
 
+    <!-- SEARCH BAR -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+        <form method="GET" action="{{ route('opname.index') }}" class="flex items-center gap-2.5">
+            <div class="flex-1 relative">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama barang, SKU, barcode, atau serial number..." class="w-full pl-10 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500 min-h-[44px]">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+            </div>
+            <button type="submit" class="px-4 py-2 min-h-[44px] bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold rounded-xl cursor-pointer">
+                Cari
+            </button>
+            @if(request('search'))
+                <a href="{{ route('opname.index') }}" class="p-2.5 min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600" title="Reset Pencarian">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </a>
+            @endif
+        </form>
+    </div>
+
     <!-- TABEL REKONSILIASI STOK -->
     <div class="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
         <div class="overflow-x-auto">
@@ -32,7 +52,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
-                    @foreach($products as $prod)
+                    @forelse($products as $prod)
                         <tr class="hover:bg-slate-50 transition-colors">
                             <td class="py-4 px-6">
                                 <span class="font-bold text-slate-900 block">{{ $prod->name }}</span>
@@ -59,10 +79,22 @@
                                 </a>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="6" class="p-8 text-center text-slate-500">
+                                Tidak ada data barang yang sesuai dengan pencarian.
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
+
+        @if($products->hasPages())
+            <div class="p-4 px-6 border-t border-slate-200 bg-slate-50/50">
+                {{ $products->links() }}
+            </div>
+        @endif
     </div>
 
 </div>

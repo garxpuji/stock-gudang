@@ -157,6 +157,11 @@ DB_PASSWORD=<your_secure_password>
 
 SESSION_ENCRYPT=true
 SESSION_SECURE_COOKIE=true          # Set false sementara jika belum mengaktifkan HTTPS
+
+LOG_CHANNEL=stack
+LOG_STACK=daily
+LOG_LEVEL=warning
+# TRUSTED_PROXIES=127.0.0.1         # Isi IP reverse proxy / Cloudflare bila digunakan
 ```
 
 > [!CAUTION]
@@ -287,7 +292,19 @@ Tambahkan baris berikut di akhir file:
 * * * * * cd /var/www/stock-gudang && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-### 2. Systemd Service untuk Queue Worker (Opsional & Disarankan)
+### 2. Backup Otomatis Database MariaDB Harian
+Buat direktori backup yang aman dan jadwalkan `mariadb-dump` terkompresi dengan retensi 14 hari pada crontab server:
+```bash
+sudo mkdir -p /var/backups/stock-gudang
+sudo chmod 700 /var/backups/stock-gudang
+sudo crontab -e
+```
+Tambahkan baris berikut (jalan setiap hari pukul `02:00`):
+```cron
+0 2 * * * /usr/bin/mariadb-dump --single-transaction --routines --triggers stock_gudang | gzip > /var/backups/stock-gudang/db_$(date +\%F).sql.gz && find /var/backups/stock-gudang -name "db_*.sql.gz" -mtime +14 -delete
+```
+
+### 3. Systemd Service untuk Queue Worker (Opsional & Disarankan)
 Buat service file systemd agar proses antrean berjalan di background secara andal:
 ```bash
 sudo nano /etc/systemd/system/stock-gudang-worker.service
